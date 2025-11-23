@@ -6,9 +6,19 @@ import type { User } from "../types/api";
 export const useAuthStore = defineStore("auth", () => {
     const user = ref<User | null>(null);
     // const isLoading = ref(false);
+    // Clear user from localStorage
+    const clearStorage = () => {
+        localStorage.removeItem('user')
+    }
 
     const isAuthenticated = computed(() => !!user.value);
     const userId = computed(() => user.value?._id || null);
+
+        // Logout user
+    const logout = () => {
+        user.value = null
+        clearStorage()
+    }
 
     async function login(username: string, password: string) {
         try {
@@ -32,12 +42,15 @@ export const useAuthStore = defineStore("auth", () => {
         }
     }
 
+
     return {
     //State
         user, 
         isAuthenticated, 
+        userId,
     //Actions
         login,
-        register
+        register,
+        logout
     };
 });

@@ -96,6 +96,16 @@ const handleRegister = async () => {
         registerForm.value.username,
         registerForm.value.password,
     );
+
+    // 2. Automatically log in
+    await authStore.login({
+      username: registerForm.value.username,
+      password: registerForm.value.password,
+    });
+
+     // 3. Navigate to home
+    router.push("/");
+
   } catch (error) {
     errorMessage.value = "Registration failed. Please try again.";
   }
