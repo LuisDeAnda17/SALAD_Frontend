@@ -54,9 +54,8 @@
     </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
-import { apiService } from "../services/api";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 
@@ -85,7 +84,7 @@ const handleLogin = async () => {
         password: loginForm.value.password,
     });
     router.push("/");
-  } catch (error) {
+  } catch {
     errorMessage.value = "Login failed. Please check your credentials.";
   }
 };
@@ -106,7 +105,7 @@ const handleRegister = async () => {
      // 3. Navigate to home
     router.push("/");
 
-  } catch (error) {
+  } catch  {
     errorMessage.value = "Registration failed. Please try again.";
   }
 };

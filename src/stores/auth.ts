@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { apiService } from "../services/api";
 import type { User } from "../types/api";
+import { authApi } from "@/services/api/authApi";
 
 export const useAuthStore = defineStore("auth", () => {
     const user = ref<User | null>(null);
@@ -22,7 +22,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     async function login(username: string, password: string) {
         try {
-        const response = await apiService.login({ username, password });
+        const response = await authApi.login({ username, password });
         user.value = { _id: response.data.user, username };
         //Eventually add session handling here
         return response;
@@ -34,7 +34,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     async function register(username: string, password: string) {
         try {
-        const response = await apiService.register({ username, password });
+        const response = await authApi.register({ username, password });
         return response;
         } catch (error) {
         console.error("Registration failed:", error);
