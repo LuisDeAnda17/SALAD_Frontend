@@ -79,10 +79,10 @@ const toggleForm = () => {
 
 const handleLogin = async () => {
   try {
-    await authStore.login({
-        username: loginForm.value.username,
-        password: loginForm.value.password,
-    });
+    await authStore.login(
+        loginForm.value.username,
+        loginForm.value.password,
+    );
     router.push("/");
   } catch {
     errorMessage.value = "Login failed. Please check your credentials.";
@@ -97,10 +97,10 @@ const handleRegister = async () => {
     );
 
     // 2. Automatically log in
-    await authStore.login({
-      username: registerForm.value.username,
-      password: registerForm.value.password,
-    });
+    await authStore.login(
+      registerForm.value.username,
+      registerForm.value.password,
+    );
 
      // 3. Navigate to home
     router.push("/");
