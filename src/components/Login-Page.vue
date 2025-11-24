@@ -91,12 +91,17 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   try {
-    await authStore.register(
+    const regSuccessful = await authStore.register(
         registerForm.value.username,
         registerForm.value.password,
     );
 
-    // 2. Automatically log in
+    if (regSuccessful.data?.error) {
+      errorMessage.value = 'user already exists!'
+      return;
+    }
+
+    // 2. Log in
     await authStore.login(
       registerForm.value.username,
       registerForm.value.password,
