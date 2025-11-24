@@ -1,31 +1,31 @@
 // API Types based on the API specification
 
 export interface User {
-  _id: string;
-  username: string;
+  _id: string
+  username: string
 }
 
 // UserAuthentication Types
 
 export interface UploadUserRequest {
-  username: string;
-  password: string;
+  username: string
+  password: string
 }
 
 export interface UploadUserResponse {
-    user: string;
+  user: string
 }
 
 export interface LoginRequest {
-  username: string;
-  password: string;
+  username: string
+  password: string
 }
 
 export interface LoginResponse {
-    user: string;
+  user: string
 }
 
 // Error Response
 export interface ErrorResponse {
-  error: string;
+  error: string
 }
