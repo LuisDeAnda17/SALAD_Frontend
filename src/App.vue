@@ -64,7 +64,7 @@ nav {
 
   padding: 1rem 2rem;
 
-  background-color: var(--raspberry-rose);
+  background-color: black;
   opacity: 0.8;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);

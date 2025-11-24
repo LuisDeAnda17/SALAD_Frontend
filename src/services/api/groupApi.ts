@@ -2,6 +2,9 @@ import type { AxiosResponse } from "axios";
 import { http } from "./http";
 
 class GroupApi {
+    async create(request: CreateRequest): Promise<AxiosResponse<LoginResponse>> {
+        return http.post("/UserAuthentication/login", request);
+      }
 // create(leader: User, name: string, private: boolean): (group: Group)
 
 // **requires** name is not an empty string
