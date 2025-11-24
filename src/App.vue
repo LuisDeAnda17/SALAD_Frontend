@@ -5,7 +5,7 @@ import { computed } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
-const currentUser = computed(() => authStore.userId)
+const currentUser = computed(() => authStore.user?.username)
 
 const handleLogout = () => {
   authStore.logout()
