@@ -8,7 +8,7 @@ export class AuthApi {
   }
 
   async register(request: UploadUserRequest): Promise<AxiosResponse<UploadUserResponse>> {
-    return http.post("/uploadUser", request);
+    return http.post("/UserAuthentication/uploadUser", request);
   }
 
   async logout(request: LogoutRequest): Promise<AxiosResponse<void>> {
