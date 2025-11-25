@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
-import GroupView from '../views/GroupView.vue' 
-import FriendingView from '../views/FriendingView.vue' 
-import ChallengesView from '../views/ChallengesView.vue' 
+import GroupView from '../views/GroupView.vue'
+import FriendingView from '../views/FriendingView.vue'
+import ChallengesView from '../views/ChallengesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +39,11 @@ const router = createRouter({
     {
       path: '/challenges',
       name: 'challenges',
+      component: ChallengesView,
+    },
+    {
+      path: '/challenges/progress',
+      name: 'challenge progress',
       component: ChallengesView,
     },
   ],
