@@ -4,15 +4,15 @@ import { http } from "./http";
 
 export class AuthApi {
   async login(request: LoginRequest): Promise<AxiosResponse<LoginResponse>> {
-    return http.post("/UserAuthentication/login", request);
+    return http.post("/login", request);
   }
 
   async register(request: UploadUserRequest): Promise<AxiosResponse<UploadUserResponse>> {
-    return http.post("/UserAuthentication/uploadUser", request);
+    return http.post("/uploadUser", request);
   }
 
   async logout(request: LogoutRequest): Promise<AxiosResponse<void>> {
-    return http.post("/UserAuthentication/logout", request);
+    return http.post("/logout", request);
   }
 }
 
