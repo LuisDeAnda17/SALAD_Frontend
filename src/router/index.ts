@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import GroupView from '../views/GroupView.vue' 
 import FriendingView from '../views/FriendingView.vue' 
+import FriendsView from '../views/FriendsView.vue'
 import ChallengesView from '../views/ChallengesView.vue' 
 
 const router = createRouter({
@@ -35,6 +36,11 @@ const router = createRouter({
       path: '/friending',
       name: 'friending',
       component: FriendingView,
+    },
+    {
+      path: '/friends',
+      name: 'friends',
+      component: FriendsView,
     },
     {
       path: '/challenges',
