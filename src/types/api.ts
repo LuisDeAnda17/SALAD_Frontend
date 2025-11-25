@@ -22,7 +22,13 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  user: string
+    user: string;
+    sessionId: string;
+}
+
+export interface LogoutRequest {
+    session: string;
+    user: string;
 }
 
 // Error Response
