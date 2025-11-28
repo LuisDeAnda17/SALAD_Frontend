@@ -1,10 +1,10 @@
-import type { LoginRequest, LoginResponse, UploadUserRequest, UploadUserResponse, GetUsername, GetUser, isUser, GetUsernameResponse, GetUserResponse, isUserResponse, GetAllUsersResponse } from "@/types/api";
+import type { LoginRequest, LoginResponse, UploadUserRequest, UploadUserResponse, GetUsername, GetUsernameResponse, GetAllUsersResponse, LogoutRequest} from "@/types/api";
 import type { AxiosResponse } from "axios";
 import { http } from "./http";
 
 export class AuthApi {
   async login(request: LoginRequest): Promise<AxiosResponse<LoginResponse>> {
-    return http.post("/UserAuthentication/login", request);
+    return http.post("/login", request);
   }
 
   async register(request: UploadUserRequest): Promise<AxiosResponse<UploadUserResponse>> {
@@ -17,6 +17,10 @@ export class AuthApi {
 
   async getAllUsers(): Promise<AxiosResponse<GetAllUsersResponse[]>> {
     return http.post("/UserAuthentication/_getAllUsers");
+  }
+
+  async logout(request: LogoutRequest): Promise<AxiosResponse<void>> {
+    return http.post("/logout", request);
   }
 }
 
