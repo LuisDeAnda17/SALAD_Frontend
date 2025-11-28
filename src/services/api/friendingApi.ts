@@ -10,7 +10,7 @@ import type {
   GetFriendRequestsResponse,
   GetFriendRequestInfoRequest,
   GetFriendRequestInfoResponse,
-} from "@/types/api";
+} from "@/types/friending";
 import type { AxiosResponse } from "axios";
 import { http } from "./http";
 

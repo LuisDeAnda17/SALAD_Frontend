@@ -15,14 +15,6 @@ export class AuthApi {
     return http.post("/UserAuthentication/_getUsername", request);
   }
 
-  async getUser(request: GetUser): Promise<AxiosResponse<GetUserResponse[]>> {
-    return http.post("/UserAuthentication/_getUser", request);
-  }
-
-  async isUser(request: isUser): Promise<AxiosResponse<isUserResponse[]>> {
-    return http.post("/UserAuthentication/_isUser", request);
-  }
-
   async getAllUsers(): Promise<AxiosResponse<GetAllUsersResponse[]>> {
     return http.post("/UserAuthentication/_getAllUsers");
   }
