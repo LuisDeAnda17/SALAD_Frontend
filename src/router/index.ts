@@ -4,6 +4,7 @@ import LoginView from '@/views/LoginView.vue'
 import GroupView from '../views/GroupView.vue'
 import FriendingView from '../views/FriendingView.vue'
 import ChallengesView from '../views/ChallengesView.vue'
+import leaderboardView from '../views/leaderboardView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,11 @@ const router = createRouter({
       path: '/challenges/progress',
       name: 'challenge progress',
       component: ChallengesView,
+    },
+    {
+      path: '/leaderboard',
+      name: 'leaderboard',
+      component: leaderboardView,
     },
   ],
 })

@@ -18,13 +18,13 @@ export const useAuthStore = defineStore("auth", () => {
 
         // Logout user
     async function logout() {
-        user.value = null
-        sessionId.value = null
         try {
-            await authApi.logout({ user: userId?.value || '', session: sessionId?.value || ''}); 
+            await authApi.logout({session: sessionId?.value || ''}); 
         } catch (error) {
             console.error("Logout failed:", error);
         }
+        user.value = null
+        sessionId.value = null
         clearStorage()
     }
 

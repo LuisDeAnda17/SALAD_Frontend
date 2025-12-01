@@ -28,7 +28,6 @@ export interface LoginResponse {
 
 export interface LogoutRequest {
     session: string;
-    user: string;
 }
 
 // Error Response
