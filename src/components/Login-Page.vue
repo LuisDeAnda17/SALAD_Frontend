@@ -96,7 +96,7 @@ const handleRegister = async () => {
         registerForm.value.password,
     );
 
-    if (regSuccessful.data?.error) {
+    if (!regSuccessful) {
       errorMessage.value = 'user already exists!'
       return;
     }

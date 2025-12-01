@@ -1,96 +1,94 @@
 import type { AxiosResponse } from "axios";
 import { http } from "./http";
+import type {
+  CreateRequest,
+  CreateResponse,
+  RequestGroupRequest,
+  RequestGroupResponse,
+  AcceptGroupRequest,
+  DenyGroupRequest,
+  RemoveMemberRequest,
+  DeleteGroupRequest,
+  GetGroupsRequest,
+  GetGroupsResponse,
+  GetMembersRequest,
+  GetMembersResponse,
+  GetLeaderRequest,
+  GetLeaderResponse,
+  GetNameRequest,
+  GetNameResponse,
+  IsPrivateRequest,
+  IsPrivateResponse,
+  GetPublicGroupsResponse,
+  GetGroupRequestsRequest,
+  GetGroupRequestsResponse,
+  GetUserRequestsRequest,
+  GetUserRequestsResponse,
+  GetRequestDetailsRequest,
+  GetRequestDetailsResponse,
+} from "@/types/group";
 
 class GroupApi {
-    async create(request: CreateRequest): Promise<AxiosResponse<LoginResponse>> {
-        return http.post("/UserAuthentication/login", request);
-      }
-// create(leader: User, name: string, private: boolean): (group: Group)
+      async create(request: CreateRequest): Promise<AxiosResponse<CreateResponse>> {
+    return http.post("/Group/create", request);
+  }
 
-// **requires** name is not an empty string
+  async request(request: RequestGroupRequest): Promise<AxiosResponse<RequestGroupResponse>> {
+    return http.post("/Group/request", request);
+  }
 
-// **effect** creates a group with name, private, leader
+  async accept(request: AcceptGroupRequest): Promise<AxiosResponse<void>> {
+    return http.post("/Group/accept", request);
+  }
 
-// request(user: User, group: Group): (membershipRequest: MembershipRequest)
+  async deny(request: DenyGroupRequest): Promise<AxiosResponse<void>> {
+    return http.post("/Group/deny", request);
+  }
 
-// **requires** group is in Groups, user is not in group
+  async removeMember(request: RemoveMemberRequest): Promise<AxiosResponse<void>> {
+    return http.post("/Group/removeMember", request);
+  }
 
-// **effect** creates a MembershipRequest with group and user as Requester
+  async deleteGroup(request: DeleteGroupRequest): Promise<AxiosResponse<void>> {
+    return http.post("/Group/deleteGroup", request);
+  }
 
-// accept(request: MembershipRequest)
+  async getGroups(request: GetGroupsRequest): Promise<AxiosResponse<GetGroupsResponse>> {
+    return http.post("/Group/getGroups", request);
+  }
 
-// **requires** request is in MembershipRequests
+  async getMembers(request: GetMembersRequest): Promise<AxiosResponse<GetMembersResponse>> {
+    return http.post("/Group/getMembers", request);
+  }
 
-// **effect** adds Requester of request to Members for Group of request; deletes request from MembershipRequests
+  async getLeader(request: GetLeaderRequest): Promise<AxiosResponse<GetLeaderResponse>> {
+    return http.post("/Group/getLeader", request);
+  }
 
-// deny(request: MembershipRequest)
+  async getName(request: GetNameRequest): Promise<AxiosResponse<GetNameResponse>> {
+    return http.post("/Group/getName", request);
+  }
 
-// **requires** request is in MembershipRequests
+  async isPrivate(request: IsPrivateRequest): Promise<AxiosResponse<IsPrivateResponse>> {
+    return http.post("/Group/isPrivate", request);
+  }
 
-// **effect** removes request from MembershipRequests
+  async getPublicGroups(): Promise<AxiosResponse<GetPublicGroupsResponse>> {
+    return http.post("/Group/getPublicGroups");
+  }
 
-// removeMember(user: User, group: Group)
+  async getGroupRequests(request: GetGroupRequestsRequest): Promise<AxiosResponse<GetGroupRequestsResponse>> {
+    return http.post("/Group/getGroupRequests", request);
+  }
 
-// **requires** group is in Groups; user is in Members for group
+  async getUserRequests(request: GetUserRequestsRequest): Promise<AxiosResponse<GetUserRequestsResponse>> {
+    return http.post("/Group/getUserRequests", request);
+  }
 
-// **effect** removes user from Members for group
-
-// deleteGroup(group: Group)
-
-// **requires** group is in Groups
-
-// **effect** removes group from Groups and all associated MembershipRequests
-
-// **queries**
-
-// \_getGroups(user: User): (groups: Group[])
-
-// **requires** nothing
-
-// **effect** returns list of groups owned by user
-
-// \_getMembers(group: Group): (members: User[])
-
-// **requires** group is in Groups
-
-// **effect** returns Members of group
-
-// \_getLeader(group: Group): (leader: User)
-
-// **requires** group is in Groups
-
-// **effect** returns Leader of group
-
-// \_getName(group: Group): string
-
-// **requires** group is in Groups
-
-// **effect** returns Name of group
-
-// \_isPrivate(group: Group): (isPrivate: flag)
-
-// **requires** group is in Groups
-
-// **effect** returns Private of group
-
-// \_getPublicGroups(): Array of Group
-
-// **requires** nothing
-
-// **effect** returns every group in Group where Private is True
-
-// \_getGroupRequests(group: Group): Array of GroupRequest
-
-// **requires** group exists in Group
-
-// **effect** returns all GroupRequests where Group is group
-
-// \_getUserRequests(user: User): Array of GroupRequest
-
-// **requires** nothing
-
-// **effect** returns all GroupRequests where Requester is user
-
+  async getRequestDetails(request: GetRequestDetailsRequest): Promise<AxiosResponse<GetRequestDetailsResponse>> {
+    return http.post("/Group/getRequestDetails", request);
+  }
 }
+
 
 export const groupApi = new GroupApi()
