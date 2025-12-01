@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: "request-friend", userId: string): void;
+  (event: "start-chat", userId: string): void;
 }>();
 
 const isSelf = computed(() => props.currentUserId === props.user?._id);
@@ -40,6 +41,11 @@ const actionLabel = computed(() => {
 const handleRequest = () => {
   if (!props.user || !canRequest.value) return;
   emit("request-friend", props.user._id);
+};
+
+const handleStartChat = () => {
+  if (!props.user || isSelf.value) return;
+  emit("start-chat", props.user._id);
 };
 </script>
 
@@ -68,6 +74,14 @@ const handleRequest = () => {
         @click="handleRequest"
       >
         {{ actionLabel }}
+      </button>
+      <button
+        v-if="!isSelf"
+        class="profile-card__chat"
+        type="button"
+        @click="handleStartChat"
+      >
+        Start Chat
       </button>
     </div>
   </article>
@@ -124,6 +138,7 @@ const handleRequest = () => {
 
 .profile-card__actions {
   display: flex;
+  gap: 0.5rem;
 }
 
 .profile-card__request {
@@ -141,5 +156,25 @@ const handleRequest = () => {
   background: #c7cde6;
   cursor: default;
   opacity: 0.7;
+}
+
+.profile-card__chat {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #10b981;
+  color: white;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.profile-card__chat:hover {
+  background: #059669;
+  transform: scale(1.02);
+}
+
+.profile-card__chat:active {
+  transform: scale(0.98);
 }
 </style>

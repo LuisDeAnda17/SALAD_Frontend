@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, reactive } from "vue";
 import ProfilePage from "@/components/Profile-Page.vue";
+import ChatPopup from "@/components/ChatPopup.vue";
 import type { User } from "@/types/api";
 import { friendingApi } from "@/services/api/friendingApi";
 import { authApi } from "@/services/api/authApi";
+import { chatApi } from "@/services/api/chatApi";
 import { useAuthStore } from "@/stores/auth";
+import type { GetChatsResponse } from "@/types/chat";
 
 type DiscoverableUser = User & {
   bio?: string;
@@ -18,6 +21,11 @@ const fetchError = ref<string | null>(null);
 const searchTerm = ref("");
 const requestState = reactive<Record<string, "idle" | "pending" | "sent">>({});
 const authStore = useAuthStore();
+
+// Chat popup state
+const chatPopupOpen = ref(false);
+const chatOtherUser = ref<{ id: string; username: string } | null>(null);
+const chatId = ref<string | null>(null);
 
 const filteredProfiles = computed(() => {
   const needle = searchTerm.value.trim().toLowerCase();
@@ -82,6 +90,77 @@ const sendFriendRequest = async (userId: string) => {
   }
 };
 
+const startChat = async (userId: string) => {
+  if (!authStore.userId) {
+    fetchError.value = "You need to log in before starting a chat.";
+    return;
+  }
+
+  try {
+    // Find the user profile to get their username
+    const userProfile = profiles.value.find(p => p._id === userId);
+    if (!userProfile) {
+      fetchError.value = "User not found";
+      return;
+    }
+
+    // Start or get the chat
+    const startResponse = await chatApi.startChat({
+      requester: authStore.userId,
+      receiver: userId,
+    });
+    
+    if (startResponse.data && "error" in startResponse.data) {
+      fetchError.value = startResponse.data.error;
+      return;
+    }
+
+    // Get the chat ID - try from startChat response first, then getChats
+    let chatIdValue: string | null = null;
+    
+    // Check if startChat returned a chat ID
+    if (startResponse.data && "chat" in startResponse.data) {
+      chatIdValue = startResponse.data.chat;
+    } else {
+      // Fallback: get the chat ID between the two users
+      try {
+        const chatResponse = await chatApi.getChats({
+          userA: authStore.userId,
+          userB: userId,
+        });
+        
+        if (Array.isArray(chatResponse.data)) {
+          const chats = chatResponse.data.filter(
+            (item): item is GetChatsResponse => !("error" in item)
+          );
+          chatIdValue = chats.length > 0 && chats[0] ? chats[0].chat : null;
+        }
+      } catch (err) {
+        console.error("Failed to get chat ID:", err);
+        // Still open popup even if we can't get chat ID
+      }
+    }
+
+    // Open the chat popup
+    chatOtherUser.value = {
+      id: userId,
+      username: userProfile.username,
+    };
+    chatId.value = chatIdValue;
+    chatPopupOpen.value = true;
+    fetchError.value = null;
+  } catch (error) {
+    fetchError.value =
+      error instanceof Error ? error.message : "Unable to start chat";
+  }
+};
+
+const closeChatPopup = () => {
+  chatPopupOpen.value = false;
+  chatOtherUser.value = null;
+  chatId.value = null;
+};
+
 onMounted(fetchProfiles);
 </script>
 
@@ -122,6 +201,7 @@ onMounted(fetchProfiles);
         :current-user-id="authStore.userId"
         :request-state="requestState[profile._id]"
         @request-friend="sendFriendRequest"
+        @start-chat="startChat"
       />
     </div>
 
@@ -129,6 +209,15 @@ onMounted(fetchProfiles);
       <p>No matching profiles right now. Try searching with a different name.</p>
     </div>
   </section>
+
+  <ChatPopup
+    v-if="chatPopupOpen && chatOtherUser && authStore.userId"
+    :other-user-id="chatOtherUser.id"
+    :other-username="chatOtherUser.username"
+    :current-user-id="authStore.userId"
+    :chat-id="chatId"
+    @close="closeChatPopup"
+  />
 </template>
 
 <style scoped>

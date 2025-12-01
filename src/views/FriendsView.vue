@@ -8,7 +8,7 @@ import type {
   User,
   GetFriendsResponse,
   GetFriendRequestsResponse,
-} from "@/types/api";
+} from "@/types/friending";
 
 type FriendWithUsername = User;
 
@@ -60,6 +60,7 @@ const fetchFriends = async () => {
     // Fetch usernames for each friend ID
     const friendPromises = friendResponses.map(async (friendResponse: GetFriendsResponse) => {
       try {
+        console.log("friendResponse", friendResponse);
         const { data: usernameResponse } = await authApi.getUsername({ user: friendResponse.friend });
         return {
           _id: friendResponse.friend,
@@ -91,26 +92,38 @@ const fetchPendingRequests = async () => {
     const { data } = await friendingApi.getReceivedRequests({ user: authStore.userId });
     const requestResponses = data || [];
     
-    // Fetch usernames for each requester
+    // Fetch request info and usernames for each requester
     const requestPromises = requestResponses.map(async (requestResponse: GetFriendRequestsResponse) => {
       try {
-        const { data: usernameResponse } = await authApi.getUsername({ user: requestResponse.requester });
+        // Get requester/receiver IDs for this friend request
+        const { data: requestInfo } = await friendingApi.getRequestInfo({
+          friendRequest: requestResponse.friendRequest,
+        });
+
+        // For received requests, the other user is the requester
+        const { requester, receiver } = requestInfo[0]||{requester: "", receiver: ""};
+
+        console.log("requester", requester);
+        const { data: usernameResponse } = await authApi.getUsername({
+          user: requester,
+        });
+
         return {
-          _id: requestResponse._id,
+          _id: requestResponse.friendRequest,
           requester: {
-            _id: requestResponse.requester,
+            _id: requester,
             username: usernameResponse[0]?.username || "Unknown",
           },
-          receiver: requestResponse.receiver,
+          receiver,
         } as PendingRequestWithUsername;
       } catch (error) {
         return {
-          _id: requestResponse._id,
+          _id: requestResponse.friendRequest,
           requester: {
-            _id: requestResponse.requester,
+            _id: authStore.userId!,
             username: "Unknown",
           },
-          receiver: requestResponse.receiver,
+          receiver: authStore.userId!,
         } as PendingRequestWithUsername;
       }
     });
@@ -131,26 +144,41 @@ const fetchSentRequests = async () => {
   loading.sentRequests = true;
   try {
     const { data } = await friendingApi.getSentRequests({ user: authStore.userId });
+    console.log("data", data);
     const requestResponses = data || [];
     
-    // Fetch usernames for each receiver
+    // Fetch request info and usernames for each receiver
     const requestPromises = requestResponses.map(async (requestResponse: GetFriendRequestsResponse) => {
       try {
-        const { data: usernameResponse } = await authApi.getUsername({ user: requestResponse.receiver });
+        // Get requester/receiver IDs for this friend request
+        const { data: requestInfo } = await friendingApi.getRequestInfo({
+          friendRequest: requestResponse.friendRequest,
+        });
+        console.log("requestInfo", requestInfo);
+
+        const { requester, receiver } = requestInfo[0]||{requester: "", receiver: ""};
+        console.log("receiver", receiver);
+
+        const { data: usernameResponse } = await authApi.getUsername({
+          user: receiver,
+        });
+        console.log("usernameResponse", usernameResponse);
+
         return {
-          _id: requestResponse._id,
-          requester: requestResponse.requester,
+          _id: requestResponse.friendRequest,
+          requester,
           receiver: {
-            _id: requestResponse.receiver,
+            _id: receiver,
             username: usernameResponse[0]?.username || "Unknown",
           },
         } as SentRequestWithUsername;
       } catch (error) {
         return {
-          _id: requestResponse._id,
-          requester: requestResponse.requester,
-          receiver: {
-            _id: requestResponse.receiver,
+          _id: requestResponse.friendRequest,
+          requester: authStore.userId!,
+          receiver:
+          {
+            _id: authStore.userId!,
             username: "Unknown",
           },
         } as SentRequestWithUsername;
@@ -177,7 +205,7 @@ const acceptRequest = async (request: PendingRequestWithUsername) => {
   try {
     await friendingApi.acceptFriend({
       user: authStore.userId,
-      request: request._id,
+      requester: request.requester._id,
     });
     await refreshData();
   } catch (error) {
@@ -380,7 +408,7 @@ watch(
 
 .friends__subtitle {
   margin: 0.35rem 0 0;
-  color: #000;
+  color: #ffffff;
 }
 
 .friends__refresh {

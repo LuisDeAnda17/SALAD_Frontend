@@ -39,7 +39,7 @@ export class FriendingApi {
     return http.post("/Friending/_getSentFriendRequests", request);
   }
 
-  async getRequestInfo(request: GetFriendRequestInfoRequest): Promise<AxiosResponse<GetFriendRequestInfoResponse>> {
+  async getRequestInfo(request: GetFriendRequestInfoRequest): Promise<AxiosResponse<GetFriendRequestInfoResponse[]>> {
     return http.post("/Friending/_getRequestInfo", request);
   }
 }

@@ -1,3 +1,8 @@
+export interface User {
+  _id: string
+  username: string
+}
+
 // Friending Types
 export interface RequestFriendRequest {
     requester: string;
@@ -10,7 +15,7 @@ export interface RequestFriendRequest {
   
   export interface AcceptFriendRequest {
     user: string;
-    request: string;
+    requester: string;
   }
   
   export interface RemoveFriendRequest {
@@ -27,9 +32,7 @@ export interface RequestFriendRequest {
   }
   
   export interface GetFriendRequestsResponse {
-    _id: string;
-    requester: string;
-    receiver: string;
+    friendRequest: string;
   }
   
   export interface GetFriendRequestInfoRequest{
