@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import type { AxiosResponse } from "axios";
 import { http } from "./http";
 import type {
@@ -33,9 +32,6 @@ class GroupApi {
       async create(request: CreateRequest): Promise<AxiosResponse<CreateResponse>> {
     return http.post("/Group/create", request);
   }
-=======
-// create(leader: User, name: string, private: boolean): (group: Group)
->>>>>>> 4083e0487c8f077f2e0e2a93c6bd1d96cdb541fe
 
   async request(request: RequestGroupRequest): Promise<AxiosResponse<RequestGroupResponse>> {
     return http.post("/Group/request", request);
