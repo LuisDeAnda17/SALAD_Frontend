@@ -5,18 +5,26 @@ import { authApi } from "@/services/api/authApi";
 
 export const useAuthStore = defineStore("auth", () => {
     const user = ref<User | null>(null);
+    const sessionId = ref<string | null>(null);
     // const isLoading = ref(false);
     // Clear user from localStorage
     const clearStorage = () => {
         localStorage.removeItem('user')
+        localStorage.removeItem('sessionId')
     }
 
     const isAuthenticated = computed(() => !!user.value);
     const userId = computed(() => user.value?._id || null);
 
         // Logout user
-    const logout = () => {
+    async function logout() {
+        try {
+            await authApi.logout({session: sessionId?.value || ''}); 
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
         user.value = null
+        sessionId.value = null
         clearStorage()
     }
 
@@ -24,6 +32,7 @@ export const useAuthStore = defineStore("auth", () => {
         try {
         const response = await authApi.login({ username, password });
         user.value = { _id: response.data.user, username };
+        sessionId.value = response.data.sessionId;
         //Eventually add session handling here
         return response;
         } catch (error) {
