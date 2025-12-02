@@ -19,6 +19,8 @@ import type {
   GetBonusPointsResponse,
   GetPartPointsRequest,
   GetPartPointsResponse,
+  GetCreatedChallengesRequest,
+  GetCreatedChallengesResponse,
 } from '@/types/challengeDefinition'
 
 export class ChallengeDefinitionApi {
@@ -70,6 +72,12 @@ export class ChallengeDefinitionApi {
     request: GetBonusPointsRequest,
   ): Promise<AxiosResponse<GetBonusPointsResponse>> {
     return http.post('/ChallengeDefinition/_getBonusPoints', request)
+  }
+
+  async _getCreatedChallenges(
+    request: GetCreatedChallengesRequest,
+  ): Promise<AxiosResponse<GetCreatedChallengesResponse>> {
+    return http.post('/ChallengeDefinition/_getCreatedChallenges', request)
   }
 }
 

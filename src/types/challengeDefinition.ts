@@ -17,13 +17,15 @@ export type DistanceAerobicInfo = {
   minutes: number
 }
 
+export type ExerciseInfo = AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
+
 export interface CreateChallengeRequest {
   session: string
   exercise: string
   daysOfWeek: number
   weeks: number
   level: number
-  info: AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
+  info: ExerciseInfo
 }
 
 export interface CreateChallengeResponse {
@@ -107,3 +109,11 @@ export interface GetBonusPointsRequest {
 }
 
 export type GetBonusPointsResponse = Points[]
+
+export type GetCreatedChallengesRequest = { user: string }
+
+interface Challenge {
+  challenge: string
+}
+
+export type GetCreatedChallengesResponse = Challenge[]

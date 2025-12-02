@@ -40,11 +40,20 @@ onMounted(fetchPageData)
 </script>
 
 <template>
-  <h2>Your Challenges</h2>
-  <ChallengeList :challenges="participations" />
-
-  <h2>Invitations</h2>
-  <ChallengeList :challenges="invitations" />
+  <div id="challenge-home-wrapper">
+    <div>
+      <h2>Your Challenges</h2>
+      <ChallengeList :challenges="participations" />
+    </div>
+    <div>
+      <h2>Invitations</h2>
+      <ChallengeList :challenges="invitations" />
+    </div>
+    <div>
+      <h2>Challenges Created</h2>
+      <ChallengeList :challenges="invitations" />
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -53,5 +62,13 @@ h1 {
   font-size: 2.6rem;
   position: relative;
   top: -10px;
+}
+
+#challenge-home-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  gap: 24px;
+  align-items: start;
 }
 </style>
