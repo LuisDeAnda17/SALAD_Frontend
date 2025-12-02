@@ -32,7 +32,7 @@ export const useAuthStore = defineStore("auth", () => {
         try {
         const response = await authApi.login({ username, password });
         user.value = { _id: response.data.user, username };
-        sessionId.value = response.data.sessionId;
+        sessionId.value = response.data.session;
         //Eventually add session handling here
         return response;
         } catch (error) {
@@ -55,8 +55,10 @@ export const useAuthStore = defineStore("auth", () => {
     return {
     //State
         user, 
+    //Getters
         isAuthenticated, 
         userId,
+        sessionId,
     //Actions
         login,
         register,
