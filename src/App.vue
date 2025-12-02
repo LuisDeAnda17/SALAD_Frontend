@@ -27,6 +27,7 @@ const handleLogout = () => {
           <template v-if="authStore.isAuthenticated">
             <router-link to="/group">Group</router-link>
             <router-link to="/friending">Friending</router-link>
+            <router-link to="/invitations">Invitations</router-link>
             <router-link to="/challenges">Challenges</router-link>
             <router-link to="/create">Create Challenge</router-link>
             <div class="user-menu">

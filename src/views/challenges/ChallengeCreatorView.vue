@@ -1,13 +1,25 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import type {
+  ExerciseInfo,
+  RepAerobicInfo,
+  AnaerobicInfo,
+  DistanceAerobicInfo,
+} from '@/types/challengeDefinition'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
+const role = 'creator'
+const route = useRoute()
+const challenge = route.params.challenge as string // the UUID
+
+const challengeDefinitionStore = useChallengeDefinitionStore()
+const { deleteChallenge } = challengeDefinitionStore
 </script>
 
-<template>
-  <h1>Challenge Creator</h1>
-</template>
+<template>Challenge Creator</template>
 
 <style scoped>
 h1 {
