@@ -5,9 +5,9 @@
 
     <!-- Tabs for different views -->
     <div class="tabs">
-      <button :class="{ active: currentTab === 'myGroups' }" @click="currentTab = 'myGroups'">My Groups</button>
-      <button :class="{ active: currentTab === 'ledGroups' }" @click="currentTab = 'ledGroups'">Groups I Lead</button>
-      <button :class="{ active: currentTab === 'publicGroups' }" @click="currentTab = 'publicGroups'">Public Groups</button>
+      <button :class="{ active: currentTab === 'myGroups' }" @click="currentTab = 'myGroups'; fetchMyGroups();">My Groups</button>
+      <button :class="{ active: currentTab === 'ledGroups' }" @click="currentTab = 'ledGroups'; fetchLedGroups();">Groups I Lead</button>
+      <button :class="{ active: currentTab === 'publicGroups' }" @click="currentTab = 'publicGroups'; fetchPublicGroups();">Public Groups</button>
     </div>
 
     <div v-if="currentTab === 'myGroups'">
@@ -42,10 +42,8 @@
       </div>
     </div>
 
-  <h2>Groups I Lead</h2>
-
     <div v-if="currentTab === 'ledGroups'">
-      <h2>Groups I Lead</h2>
+      
       <ul>
         <li v-for="group in ledGroups" :key="group.group">
           <strong>{{ group.name }}</strong>
@@ -82,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { groupApi } from "@/services/api/groupApi.ts";
 import { useAuthStore } from "@/stores/auth.ts";
 import type {
@@ -92,6 +90,7 @@ import type {
   GetNameResponse,
   GetLeaderResponse,
   GetPublicGroupsResponse,
+  RequestGroupResponse,
   AcceptGroupRequest,
   DenyGroupRequest,
   RemoveMemberRequest,
@@ -103,7 +102,8 @@ import type {
 } from "@/types/group";
 
 const authStore = useAuthStore();
-const userId = authStore.userId!;
+const userId = computed(() => authStore.user?._id);
+const session = computed(() => authStore.sessionId);
 
 type GroupItem = {
   group: string;
@@ -122,18 +122,16 @@ const newGroupName = ref<string>("");
 const newGroupPrivate = ref<boolean>(false);
 
 const fetchMyGroups = async () => {
-  console.log('user id', userId);
-  const res: GetGroupsResponse = (await groupApi.getGroups({ user: userId })).data;
+  if (!userId.value) return;
+  const res: GetGroupsResponse = (await groupApi.getGroups({ user: userId.value })).data;
   console.log('res', res);
   myGroups.value = await Promise.all(
-    res.groups.map(async (g) => {
-      const groupName: GetNameResponse = (await groupApi.getName({ group: g })).data;
-      const groupLeader: GetLeaderResponse = (await groupApi.getLeader({ group: g })).data;
-      const membersRes: GetMembersResponse = (await groupApi.getMembers({ group: g })).data;
+    res.groups.map(async (g: {group: string, leader: string, name: string}) => {
+      const membersRes: GetMembersResponse = (await groupApi.getMembers({ group: g.group })).data;
       return {
-        group: g,
-        name: groupName.name,
-        leader: groupLeader.leader,
+        group: g.group,
+        name: g.name,
+        leader: g.leader,
         members: membersRes.members,
         requests: [],
       };
@@ -143,10 +141,12 @@ const fetchMyGroups = async () => {
 };
 
 const fetchLedGroups = async () => {
+if (!userId.value) return;
+fetchMyGroups();
 console.log('fetching groups');
   ledGroups.value = [];
   for (const group of myGroups.value) {
-    if (group.leader === userId) {
+    if (group.leader === userId.value) {
       const requestsRes: GetGroupRequestsResponse = (await groupApi.getGroupRequests({ group: group.group })).data;
       ledGroups.value.push({
       group: group.group, 
@@ -161,36 +161,38 @@ console.log('fetching groups');
 };
 
 const fetchPublicGroups = async (): Promise<void> => {
-  const res: GetPublicGroupsResponse = (await groupApi.getPublicGroups()).data;
-
-  publicGroups.value = await Promise.all(
-    res.groups.map(async (g: string): Promise<GroupItem> => {
-      const [nameRes, leaderRes] = await Promise.all([
-        groupApi.getName({ group: g }),
-        groupApi.getLeader({ group: g }),
-      ]);
-
-      const groupName: GetNameResponse = nameRes.data;
-      const groupLeader: GetLeaderResponse = leaderRes.data;
-
+if (!userId.value) return;
+  const res = (await groupApi.getPublicGroups()).data;
+  
+  console.log('public groups res', res);
+  publicGroups.value = 
+    await Promise.all(
+    res.groups.map(async (g: {group: string; name: string; leader: string}) => {
+      const members = (await groupApi.getMembers({ group: g.group })).data;
       return {
-        group: g,
-        name: groupName.name ?? g,
-        leader: groupLeader.leader ?? "",
-        members: [],
-        requests: [],
-      };
+      group: g.group,
+      name: g.name,
+      leader: g.leader,
+      members: members.members,
+      requests: [],
+      }
     })
   );
 };
 
 const isMember = (group: GroupItem) => myGroups.value.some((g) => g.group === group.group);
 
+// REQUEST TO JOIN GROUP
+
 const joinGroup = async (group: GroupItem) => {
+if (!userId.value) return;
+if (!session.value) return;
   const isPrivateRes: IsPrivateResponse = (await groupApi.isPrivate({ group: group.group })).data;
-  const request: RequestGroupRequest = { user: userId, group: group.group };
-  await groupApi.request(request);
+  const request: RequestGroupRequest = { session: session.value, user: userId.value, group: group.group };
+  const requestId: RequestGroupResponse = (await groupApi.request(request)).data;
   if (!isPrivateRes.isPrivate) {
+    const request: AcceptGroupRequest = { session: session.value, membershipRequest: requestId.membershipRequest };
+    await groupApi.accept(request);
     alert("Joined public group automatically");
   } else {
     alert("Request sent to join private group");
@@ -198,28 +200,37 @@ const joinGroup = async (group: GroupItem) => {
   await fetchMyGroups();
 };
 
+// LEAVE GROUP
+
 const leaveGroup = async (group: GroupItem) => {
-  if (group.leader === userId) {
-    const req: DeleteGroupRequest = { group: group.group };
+if (!session.value) return;
+if (!userId.value) return;
+  if (group.leader === userId.value) {
+    const req: DeleteGroupRequest = { session: session.value, group: group.group };
     await groupApi.deleteGroup(req);
   } else {
-    const req: RemoveMemberRequest = { user: userId, group: group.group };
+    const req: RemoveMemberRequest = { session: session.value, user: userId.value, group: group.group };
     await groupApi.removeMember(req);
   }
   await fetchMyGroups();
   await fetchLedGroups();
 };
 
+// CREATE GROUP
+
 const createGroup = async () => {
+if (!userId.value) return;
+if (!session.value) return;
   if (!newGroupName.value.trim()) {
     alert("Please enter a group name.");
     return;
   }
 
   const request: CreateRequest = {
-    leader: userId,
+    session: session.value,
+    leader: userId.value,
     name: newGroupName.value.trim(),
-    private: newGroupPrivate.value,
+    privateGroup: newGroupPrivate.value,
   };
 
   const res = await groupApi.create(request);
@@ -236,23 +247,31 @@ const createGroup = async () => {
   alert(`Group created with ID: ${data.group}`);
 };
 
+// DELETE GROUP
 
 const deleteGroup = async (group: GroupItem) => {
-  const req: DeleteGroupRequest = { group: group.group };
+  if (!session.value) return;
+  const req: DeleteGroupRequest = { session: session.value, group: group.group };
   await groupApi.deleteGroup(req);
   await fetchMyGroups();
   await fetchLedGroups();
 };
 
+// ACCEPT REQUEST
+
 const acceptRequest = async (group: GroupItem, request: { membershipRequest: string; requester: string }) => {
-  const req: AcceptGroupRequest = { membershipRequest: request.membershipRequest };
+  if (!session.value) return;
+  const req: AcceptGroupRequest = { session: session.value, membershipRequest: request.membershipRequest };
   await groupApi.accept(req);
   await fetchLedGroups();
   await fetchMyGroups();
 };
 
+// DENY REQUEST
+
 const denyRequest = async (group: GroupItem, request: { membershipRequest: string; requester: string }) => {
-  const req: DenyGroupRequest = { membershipRequest: request.membershipRequest };
+  if (!session.value) return;
+  const req: DenyGroupRequest = { session: session.value, membershipRequest: request.membershipRequest };
   await groupApi.deny(req);
   await fetchLedGroups();
 };

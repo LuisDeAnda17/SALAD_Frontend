@@ -1,8 +1,9 @@
 
 export interface CreateRequest {
+    session: string,
     leader: string, 
     name: string, 
-    private: boolean
+    privateGroup: boolean
 }
 
 export interface CreateResponse {
@@ -10,6 +11,7 @@ export interface CreateResponse {
 }
 
 export interface RequestGroupRequest {
+    session: string,
     user: string,
     group: string
 }
@@ -19,19 +21,23 @@ export interface RequestGroupResponse {
 }
 
 export interface AcceptGroupRequest {
+    session: string,
     membershipRequest: string
 }
 
 export interface DenyGroupRequest {
+    session: string,
     membershipRequest: string
 }
 
 export interface RemoveMemberRequest {
+    session: string,
     user: string,
     group: string
 }
 
 export interface DeleteGroupRequest {
+    session: string,
     group: string
 }
 
@@ -40,7 +46,7 @@ export interface GetGroupsRequest {
 }
 
 export interface GetGroupsResponse {
-    groups: string[]
+    groups: {group: string; name: string; leader: string}[]
 }
 
 export interface GetMembersRequest {
@@ -76,7 +82,7 @@ export interface IsPrivateResponse {
 }
 
 export interface GetPublicGroupsResponse {
-    groups: string[]
+    groups: {group: string; name: string; leader: string}[]
 }
 
 

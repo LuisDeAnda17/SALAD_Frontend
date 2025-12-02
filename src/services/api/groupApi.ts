@@ -30,63 +30,63 @@ import type {
 
 class GroupApi {
       async create(request: CreateRequest): Promise<AxiosResponse<CreateResponse>> {
-    return http.post("/Group/create", request);
+    return http.post("/createGroup", request);
   }
 
   async request(request: RequestGroupRequest): Promise<AxiosResponse<RequestGroupResponse>> {
-    return http.post("/Group/request", request);
+    return http.post("/requestMembership", request);
   }
 
   async accept(request: AcceptGroupRequest): Promise<AxiosResponse<void>> {
-    return http.post("/Group/accept", request);
+    return http.post("/acceptMembership", request);
   }
 
   async deny(request: DenyGroupRequest): Promise<AxiosResponse<void>> {
-    return http.post("/Group/deny", request);
+    return http.post("/denyMembership", request);
   }
 
   async removeMember(request: RemoveMemberRequest): Promise<AxiosResponse<void>> {
-    return http.post("/Group/removeMember", request);
+    return http.post("/removeMember", request);
   }
 
   async deleteGroup(request: DeleteGroupRequest): Promise<AxiosResponse<void>> {
-    return http.post("/Group/deleteGroup", request);
+    return http.post("/deleteGroup", request);
   }
 
   async getGroups(request: GetGroupsRequest): Promise<AxiosResponse<GetGroupsResponse>> {
-    return http.post("/Group/getGroups", request);
+    return http.post("/Group/_getGroups", request);
   }
 
   async getMembers(request: GetMembersRequest): Promise<AxiosResponse<GetMembersResponse>> {
-    return http.post("/Group/getMembers", request);
+    return http.post("/Group/_getMembers", request);
   }
 
   async getLeader(request: GetLeaderRequest): Promise<AxiosResponse<GetLeaderResponse>> {
-    return http.post("/Group/getLeader", request);
+    return http.post("/Group/_getLeader", request);
   }
 
   async getName(request: GetNameRequest): Promise<AxiosResponse<GetNameResponse>> {
-    return http.post("/Group/getName", request);
+    return http.post("/Group/_getName", request);
   }
 
   async isPrivate(request: IsPrivateRequest): Promise<AxiosResponse<IsPrivateResponse>> {
-    return http.post("/Group/isPrivate", request);
+    return http.post("/Group/_isPrivate", request);
   }
 
   async getPublicGroups(): Promise<AxiosResponse<GetPublicGroupsResponse>> {
-    return http.post("/Group/getPublicGroups");
+    return http.post("/Group/_getPublicGroups");
   }
 
   async getGroupRequests(request: GetGroupRequestsRequest): Promise<AxiosResponse<GetGroupRequestsResponse>> {
-    return http.post("/Group/getGroupRequests", request);
+    return http.post("/Group/_getGroupRequests", request);
   }
 
   async getUserRequests(request: GetUserRequestsRequest): Promise<AxiosResponse<GetUserRequestsResponse>> {
-    return http.post("/Group/getUserRequests", request);
+    return http.post("/Group/_getUserRequests", request);
   }
 
   async getRequestDetails(request: GetRequestDetailsRequest): Promise<AxiosResponse<GetRequestDetailsResponse>> {
-    return http.post("/Group/getRequestDetails", request);
+    return http.post("/Group/_getRequestDetails", request);
   }
 }
 
