@@ -22,15 +22,25 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-    user: string;
-    session: string;
+  user: string
+  session: string
 }
 
 export interface LogoutRequest {
-    session: string;
+  session: string
 }
 
 // Error Response
 export interface ErrorResponse {
   error: string
 }
+
+export interface GetUsernameRequest {
+  user: string
+}
+
+interface Username {
+  username: string
+}
+
+export type GetUsernameResponse = Username[]

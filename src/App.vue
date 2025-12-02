@@ -14,46 +14,57 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header>
-    <nav>
-      <div class="nav-brand">
-        <h2>GymTogether</h2>
-      </div>
+  <div id="app">
+    <header>
+      <nav>
+        <div class="nav-brand">
+          <h2>GymTogether</h2>
+        </div>
 
-      <div class="nav-links">
-        <router-link to="/">Home</router-link>
+        <div class="nav-links">
+          <router-link to="/">Home</router-link>
 
-        <template v-if="authStore.isAuthenticated">
-          <router-link to="/group">Group</router-link>
-          <router-link to="/friending">Friending</router-link>
-          <router-link to="/challenges">Challenges</router-link>
+          <template v-if="authStore.isAuthenticated">
+            <router-link to="/group">Group</router-link>
+            <router-link to="/friending">Friending</router-link>
+            <router-link to="/challenges">Challenges</router-link>
+            <router-link to="/create">Create Challenge</router-link>
+            <div class="user-menu">
+              <span class="username">{{ currentUser }}</span>
+              <button @click="handleLogout" class="logout-btn">Logout</button>
+            </div>
+          </template>
 
-          <div class="user-menu">
-            <span class="username">{{ currentUser }}</span>
-            <button @click="handleLogout" class="logout-btn">Logout</button>
-          </div>
-        </template>
+          <template v-else>
+            <router-link to="/login">Sign In</router-link>
+          </template>
+        </div>
+      </nav>
+    </header>
 
-        <template v-else>
-          <router-link to="/login">Sign In</router-link>
-        </template>
-      </div>
-    </nav>
-  </header>
-
-  <main class="content">
-    <RouterView />
-  </main>
+    <main class="content">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-<style scoped>
+<style>
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background-color: black;
+}
+
+/* HEADER / NAVBAR */
 header {
   width: 100%;
 }
 
 nav {
   width: 100%;
-  position: fixed;        /* makes navbar fixed at top */
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
@@ -70,11 +81,18 @@ nav {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* MAIN CONTENT AREA */
 .content {
-  padding-top: 90px;      /* prevents content from sitting under navbar */
+  width: 100%;
+  flex: 1;
+  padding-top: 24px;
+  /* Make sure it NEVER slides under navbar */
+
+  /* Optional but recommended to prevent strange brightness edges */
+  background-color: black;
 }
 
-/* ---- existing navbar styling below ---- */
+/* ---- NAVBAR STYLING ---- */
 
 .nav-brand h2 {
   color: white;
@@ -109,6 +127,10 @@ nav {
   border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.username {
+  color: white;
+}
+
 .logout-btn {
   padding: 0.5rem 1rem;
   background: rgba(239, 68, 68, 0.2);
@@ -122,6 +144,4 @@ nav {
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.3);
 }
-
-
 </style>

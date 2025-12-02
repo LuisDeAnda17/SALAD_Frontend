@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useChallengesStore } from '@/stores/challenges'
+import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useRouter } from 'vue-router'
 </script>
 
 <template>
-  <h1>Challenges</h1>
+  <h1>Challenge Participant</h1>
 </template>
 
 <style scoped>
