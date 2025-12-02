@@ -20,16 +20,19 @@ const { createChallenge } = challengeDefinitionStore
 
 const exercise = ref<string>('')
 const level = ref<number>(1)
-const weeks = ref<number>(0)
-const daysPerWeek = ref<number>(0)
+const weeks = ref<number>(1)
+const daysPerWeek = ref<number>(1)
 const category = ref<'aerobic' | 'anaerobic' | null>(null)
 const subcategory = ref<'distance' | 'rep' | null>(null)
 const weight = ref<number | null>(null) // kg
-const reps = ref<number>(0)
-const sets = ref<number>(0)
+const reps = ref<number>(1)
+const sets = ref<number>(1)
 const repSpeed = ref<number>(0) // reps/minute
-const minutes = ref<number>(0)
+const minutes = ref<number>(1)
 const distanceSpeed = ref<number>(0) // km/hr
+
+const submitted = ref(false)
+const failed = ref(false)
 
 const repAerobicInfo = computed(() => {
   if (category.value !== 'aerobic' || subcategory.value !== 'rep') {
@@ -77,7 +80,7 @@ const exerciseInfo = computed(() => {
 
 async function submitChallenge() {
   if (category.value && sessionId.value && exerciseInfo.value) {
-    await createChallenge(
+    const result = await createChallenge(
       sessionId.value,
       exercise.value,
       daysPerWeek.value,
@@ -85,12 +88,35 @@ async function submitChallenge() {
       level.value,
       exerciseInfo.value,
     )
+    if (result.status === 'failed') {
+      failed.value = true
+    } else {
+      submitted.value = true
+    }
+    await resetForm()
   }
+}
+
+async function resetForm() {
+  category.value = null
+  subcategory.value = null
+  exercise.value = ''
+  level.value = 1
+  weeks.value = 1
+  daysPerWeek.value = 1
+  reps.value = 1
+  minutes.value = 1
+  distanceSpeed.value = 0
+  repSpeed.value = 0
+  sets.value = 1
+  weight.value = null
 }
 </script>
 
 <template>
-  <div class="content">
+  <div v-if="user" class="content">
+    <h3 v-if="submitted">Challenge Created!</h3>
+    <h3 v-if="failed">Sorry, challenge creation failed!</h3>
     <h1>Create Challenge</h1>
 
     <!-- CATEGORY SELECTION -->
@@ -104,6 +130,8 @@ async function submitChallenge() {
             () => {
               category = 'aerobic'
               subcategory = null
+              submitted = false
+              failed = false
             }
           "
         >
@@ -117,6 +145,8 @@ async function submitChallenge() {
             () => {
               category = 'anaerobic'
               subcategory = null
+              submitted = false
+              failed = false
             }
           "
         >
@@ -168,7 +198,7 @@ async function submitChallenge() {
         placeholder="e.g. Burpees"
       />
 
-      <label>Level</label>
+      <label>Level (1-3)</label>
       <input type="number" v-model="level" min="1" max="3" />
 
       <label>Weeks</label>
@@ -179,7 +209,7 @@ async function submitChallenge() {
 
       <!-- ANAEROBIC FIELDS -->
       <template v-if="category === 'anaerobic'">
-        <label>Weight (kg)</label>
+        <label>Weight (kg) (Optional)</label>
         <input type="number" v-model="weight" min="0" />
 
         <label>Reps</label>

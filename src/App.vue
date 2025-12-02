@@ -128,7 +128,7 @@ nav {
 }
 
 .username {
-  text-color: white;
+  color: white;
 }
 
 .logout-btn {
