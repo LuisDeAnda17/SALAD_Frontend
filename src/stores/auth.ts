@@ -18,13 +18,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Logout user
   async function logout() {
-    user.value = null
-    sessionId.value = null
     try {
-      await authApi.logout({ user: userId?.value || '', session: sessionId?.value || '' })
+      await authApi.logout({ session: sessionId?.value || '' })
     } catch (error) {
       console.error('Logout failed:', error)
     }
+    user.value = null
+    sessionId.value = null
     clearStorage()
   }
 
@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authApi.login({ username, password })
       user.value = { _id: response.data.user, username }
-      sessionId.value = response.data.sessionId
+      sessionId.value = response.data.session
       //Eventually add session handling here
       return response
     } catch (error) {
@@ -54,6 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     //State
     user,
+    //Getters
     isAuthenticated,
     userId,
     sessionId,

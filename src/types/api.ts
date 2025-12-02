@@ -23,12 +23,11 @@ export interface LoginRequest {
 
 export interface LoginResponse {
     user: string;
-    sessionId: string;
+    session: string;
 }
 
 export interface LogoutRequest {
     session: string;
-    user: string;
 }
 
 // Error Response
