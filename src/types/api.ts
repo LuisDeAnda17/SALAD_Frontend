@@ -39,6 +39,8 @@ export interface GetUsernameRequest {
   user: string
 }
 
-export interface GetUsernameResponse {
+interface Username {
   username: string
 }
+
+export type GetUsernameResponse = Username[]
