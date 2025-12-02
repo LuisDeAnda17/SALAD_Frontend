@@ -12,22 +12,29 @@ const authStore = useAuthStore()
 const { user, userId, sessionId } = storeToRefs(authStore)
 
 const challengeParticipationStore = useChallengeParticipationStore()
+const challengeDefinitionStore = useChallengeDefinitionStore()
 
 const { _getUserParticipations, _getUserInvitations } = challengeParticipationStore
+const { _getCreatedChallenges } = challengeDefinitionStore
 
 const participations = ref<Array<{ participation: string; challenge: string }>>([])
 const invitations = ref<Array<{ invitation: string; challenge: string }>>([])
+const createdChallenges = ref<Array<{ challenge: string }>>([])
 
 const fetchPageData = async () => {
   try {
     if (userId.value) {
       const participationData = await _getUserParticipations(userId.value)
       const invitationData = await _getUserInvitations(userId.value)
+      const createdChallengeData = await _getCreatedChallenges(userId.value)
       if (Array.isArray(participationData)) {
         participations.value = participationData
       }
       if (Array.isArray(invitationData)) {
         invitations.value = invitationData
+      }
+      if (Array.isArray(createdChallengeData)) {
+        createdChallenges.value = createdChallengeData
       }
     }
   } catch (error) {
@@ -40,18 +47,18 @@ onMounted(fetchPageData)
 </script>
 
 <template>
-  <div id="challenge-home-wrapper">
+  <div v-if="user" id="challenge-home-wrapper">
     <div>
       <h2>Your Challenges</h2>
-      <ChallengeList :challenges="participations" />
+      <ChallengeList :challenges="participations" :role="'participant'" />
     </div>
     <div>
       <h2>Invitations</h2>
-      <ChallengeList :challenges="invitations" />
+      <ChallengeList :challenges="invitations" :role="'invitee'" />
     </div>
     <div>
       <h2>Challenges Created</h2>
-      <ChallengeList :challenges="invitations" />
+      <ChallengeList :challenges="createdChallenges" :role="'creator'" />
     </div>
   </div>
 </template>
@@ -70,5 +77,6 @@ h1 {
   justify-content: space-evenly;
   gap: 24px;
   align-items: start;
+  color: white;
 }
 </style>

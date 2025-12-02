@@ -22,7 +22,7 @@ export type ExerciseInfo = AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
 export interface CreateChallengeRequest {
   session: string
   exercise: string
-  daysOfWeek: number
+  daysPerWeek: number
   weeks: number
   level: number
   info: ExerciseInfo

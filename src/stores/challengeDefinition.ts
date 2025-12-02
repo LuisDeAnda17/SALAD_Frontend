@@ -8,7 +8,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
   async function createChallenge(
     session: string,
     exercise: string,
-    daysOfWeek: number,
+    daysPerWeek: number,
     weeks: number,
     level: number,
     info: ExerciseInfo,
@@ -17,7 +17,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
       const response = await challengeDefinitionApi.createChallenge({
         session,
         exercise,
-        daysOfWeek,
+        daysPerWeek,
         weeks,
         level,
         info,
@@ -25,7 +25,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
       return response.data
     } catch (error) {
       console.error('createChallenge failed:', error)
-      return error
+      return { status: 'failed' }
     }
   }
 
@@ -35,7 +35,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
       return response.data
     } catch (error) {
       console.error('openChallenge failed:', error)
-      return error
+      return { status: 'failed', error: error }
     }
   }
 
@@ -45,7 +45,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
       return response.data
     } catch (error) {
       console.error('deleteChallenge failed:', error)
-      return error
+      return { status: 'failed', error: error }
     }
   }
 
@@ -55,7 +55,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
       return response.data
     } catch (error) {
       console.error('closeChallenge failed:', error)
-      return error
+      return { status: 'failed', error: error }
     }
   }
 
@@ -65,7 +65,30 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
       return response.data
     } catch (error) {
       console.error('_getCreatedChallenges failed:', error)
-      return error
+      return { status: 'failed', error: error }
+    }
+  }
+
+  async function _getChallengeDetails(challenge: string) {
+    try {
+      const response = await challengeDefinitionApi._getChallengeDetails({ challenge })
+      console.log(`_getChallengeDetails backend result: ${response}`)
+      console.log('STRINGIFIED:', JSON.stringify(response, null, 2))
+      return response.data
+    } catch (error) {
+      console.error('_getChallengeDetails failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
+  async function _getCreator(challenge: string) {
+    try {
+      const response = await challengeDefinitionApi._getCreator({ challenge })
+      console.log(`_getCreator backend result: ${response}`)
+      return response.data
+    } catch (error) {
+      console.error('_getCreator failed:', error)
+      return { status: 'failed', error: error }
     }
   }
 
@@ -77,5 +100,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
     createChallenge,
     openChallenge,
     _getCreatedChallenges,
+    _getChallengeDetails,
+    _getCreator,
   }
 })
