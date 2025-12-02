@@ -36,3 +36,25 @@ export interface RemoveParticipationRequest {
 export interface RemoveParticipationResponse {
   status: string
 }
+
+export interface GetUserParticipationsRequest {
+  user: string
+}
+
+export interface UserParticipation {
+  participation: string
+  challenge: string
+}
+
+export type GetUserParticipationsResponse = UserParticipation[]
+
+export interface GetUserInvitationsRequest {
+  user: string
+}
+
+export interface UserInvitation {
+  invitation: string
+  challenge: string
+}
+
+export type GetUserInvitationsResponse = UserInvitation[]

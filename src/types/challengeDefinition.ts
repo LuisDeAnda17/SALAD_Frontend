@@ -57,3 +57,53 @@ export interface CloseChallengeRequest {
 export interface CloseChallengeResponse {
   status: string
 }
+
+export interface IsOpenRequest {
+  challenge: string
+}
+
+interface IsOpen {
+  isOpen: boolean
+}
+
+export type IsOpenResponse = IsOpen[]
+
+export interface GetChallengeDetailsRequest {
+  challenge: string
+}
+
+interface ChallengeDetails {
+  exercise: string
+  level: number
+  daysPerWeek: number
+  weeks: number
+  info: AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
+}
+
+export type GetChallengeDetailsResponse = ChallengeDetails[]
+
+export interface GetCreatorRequest {
+  challenge: string
+}
+
+interface Creator {
+  creator: string
+}
+
+export type GetCreatorResponse = Creator[]
+
+export interface GetPartPointsRequest {
+  challenge: string
+}
+
+interface Points {
+  points: string
+}
+
+export type GetPartPointsResponse = Points[]
+
+export interface GetBonusPointsRequest {
+  challenge: string
+}
+
+export type GetBonusPointsResponse = Points[]

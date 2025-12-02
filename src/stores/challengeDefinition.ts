@@ -3,4 +3,4 @@ import { ref, computed } from 'vue'
 import type { User } from '../types/api'
 import { challengeDefinitionApi } from '@/services/api/challengeDefinitionApi'
 
-export const useChallengesStore = defineStore('challenges', () => {})
+export const useChallengeDefinitionStore = defineStore('challengeDefinition', () => {})

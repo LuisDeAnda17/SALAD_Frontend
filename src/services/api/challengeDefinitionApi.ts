@@ -9,6 +9,16 @@ import type {
   OpenChallengeResponse,
   CloseChallengeRequest,
   CloseChallengeResponse,
+  IsOpenResponse,
+  IsOpenRequest,
+  GetChallengeDetailsRequest,
+  GetChallengeDetailsResponse,
+  GetCreatorRequest,
+  GetCreatorResponse,
+  GetBonusPointsRequest,
+  GetBonusPointsResponse,
+  GetPartPointsRequest,
+  GetPartPointsResponse,
 } from '@/types/challengeDefinition'
 
 export class ChallengeDefinitionApi {
@@ -34,6 +44,32 @@ export class ChallengeDefinitionApi {
     request: CloseChallengeRequest,
   ): Promise<AxiosResponse<CloseChallengeResponse>> {
     return http.post('/closeChallenge', request)
+  }
+
+  async _isOpen(request: IsOpenRequest): Promise<AxiosResponse<IsOpenResponse>> {
+    return http.post('/ChallengeDefinition/_isOpen', request)
+  }
+
+  async _getChallengeDetails(
+    request: GetChallengeDetailsRequest,
+  ): Promise<AxiosResponse<GetChallengeDetailsResponse>> {
+    return http.post('/ChallengeDefinition/_getChallengeDetails', request)
+  }
+
+  async _getCreator(request: GetCreatorRequest): Promise<AxiosResponse<GetCreatorResponse>> {
+    return http.post('/ChallengeDefinition/_getCreator', request)
+  }
+
+  async _getPartPoints(
+    request: GetPartPointsRequest,
+  ): Promise<AxiosResponse<GetPartPointsResponse>> {
+    return http.post('/ChallengeDefinition/_getPartPoints', request)
+  }
+
+  async _getBonusPoints(
+    request: GetBonusPointsRequest,
+  ): Promise<AxiosResponse<GetBonusPointsResponse>> {
+    return http.post('/ChallengeDefinition/_getBonusPoints', request)
   }
 }
 

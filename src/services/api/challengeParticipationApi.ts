@@ -9,6 +9,10 @@ import type {
   RemoveInvitationResponse,
   RemoveParticipationRequest,
   RemoveParticipationResponse,
+  GetUserInvitationsRequest,
+  GetUserParticipationsRequest,
+  GetUserInvitationsResponse,
+  GetUserParticipationsResponse,
 } from '@/types/challengeParticipation'
 
 export class ChallengeParticipationApi {
@@ -34,6 +38,18 @@ export class ChallengeParticipationApi {
     request: RemoveParticipationRequest,
   ): Promise<AxiosResponse<RemoveParticipationResponse>> {
     return http.post('/removeParticipation', request)
+  }
+
+  async _getUserInvitations(
+    request: GetUserInvitationsRequest,
+  ): Promise<AxiosResponse<GetUserInvitationsResponse>> {
+    return http.post('/ChallengeParticipation/_getUserInvitations', request)
+  }
+
+  async _getUserParticipations(
+    request: GetUserParticipationsRequest,
+  ): Promise<AxiosResponse<GetUserParticipationsResponse>> {
+    return http.post('/ChallengeParticipation/_getUserParticipations', request)
   }
 }
 
