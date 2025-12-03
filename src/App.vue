@@ -30,10 +30,14 @@ const closeChatList = () => {
   chatListPopupOpen.value = false
 }
 
-const openChatFromList = async (chatIdValue: string, otherUserId: string, otherUsername: string) => {
+const openChatFromList = async (
+  chatIdValue: string,
+  otherUserId: string,
+  otherUsername: string,
+) => {
   // Close chat list
   chatListPopupOpen.value = false
-  
+
   // Set chat popup state
   chatOtherUser.value = { id: otherUserId, username: otherUsername }
   chatId.value = chatIdValue
@@ -61,6 +65,7 @@ const closeChatPopup = () => {
           <template v-if="authStore.isAuthenticated">
             <router-link to="/group">Group</router-link>
             <router-link to="/friending">Friending</router-link>
+            <router-link to="/invitations">Invitations</router-link>
             <router-link to="/friends">Friends</router-link>
             <router-link to="/challenges">Challenges</router-link>
             <router-link to="/create">Create Challenge</router-link>
@@ -218,7 +223,9 @@ nav {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1500;
   display: flex;
   align-items: center;
@@ -229,7 +236,9 @@ nav {
 .floating-chat-btn:hover {
   background: #1d4ed8;
   transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 6px 16px rgba(37, 99, 235, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .floating-chat-btn:active {

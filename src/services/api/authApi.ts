@@ -1,6 +1,18 @@
-import type { LoginRequest, LoginResponse, UploadUserRequest, UploadUserResponse, GetUsernameResponse, GetAllUsersResponse, LogoutRequest, GetUsernameRequest,} from "@/types/api";
-import type { AxiosResponse } from "axios";
-import { http } from "./http";
+import type {
+  ErrorResponse,
+  LoginRequest,
+  LoginResponse,
+  LogoutRequest,
+  UploadUserRequest,
+  UploadUserResponse,
+  GetUsernameRequest,
+  GetUsernameResponse,
+  GetUserRequest,
+  GetUserResponse,
+  GetAllUsersResponse,
+} from '@/types/api'
+import type { AxiosResponse } from 'axios'
+import { http } from './http'
 
 export class AuthApi {
   async login(request: LoginRequest): Promise<AxiosResponse<LoginResponse>> {
@@ -12,7 +24,7 @@ export class AuthApi {
   }
 
   async getAllUsers(): Promise<AxiosResponse<GetAllUsersResponse[]>> {
-    return http.post("/UserAuthentication/_getAllUsers");
+    return http.post('/UserAuthentication/_getAllUsers')
   }
 
   async logout(request: LogoutRequest): Promise<AxiosResponse<void>> {
@@ -21,6 +33,10 @@ export class AuthApi {
 
   async _getUsername(request: GetUsernameRequest): Promise<AxiosResponse<GetUsernameResponse>> {
     return http.post('/UserAuthentication/_getUsername', request)
+  }
+
+  async _getUser(request: GetUserRequest): Promise<AxiosResponse<GetUserResponse>> {
+    return http.post('/UserAuthentication/_getUser', request)
   }
 }
 

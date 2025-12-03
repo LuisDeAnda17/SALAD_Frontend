@@ -62,6 +62,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function _getUser(username: string) {
+    try {
+      const response = await authApi._getUser({ username })
+      console.log(`_getUser backend result: ${response}`)
+      return response.data
+    } catch (error) {
+      console.error('_getUser failed: ', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
   return {
     //State
     user,
@@ -75,5 +86,6 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     //Queries
     _getUsername,
+    _getUser,
   }
 })
