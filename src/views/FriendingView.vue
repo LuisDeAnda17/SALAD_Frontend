@@ -8,6 +8,10 @@ import { authApi } from "@/services/api/authApi";
 import { chatApi } from "@/services/api/chatApi";
 import { useAuthStore } from "@/stores/auth";
 import type { GetChatsResponse } from "@/types/chat";
+import type {
+  GetFriendsResponse,
+  GetFriendRequestsResponse,
+} from "@/types/friending";
 
 type DiscoverableUser = User & {
   bio?: string;
@@ -22,6 +26,12 @@ const searchTerm = ref("");
 const requestState = reactive<Record<string, "idle" | "pending" | "sent">>({});
 const authStore = useAuthStore();
 
+// Track IDs to filter out (existing friends and sent requests)
+const friendIds = ref<string[]>([]);
+const sentRequestReceiverIds = ref<string[]>([]);
+// Track existing chats keyed by other user's ID
+const existingChatIds = reactive<Record<string, string>>({});
+
 // Chat popup state
 const chatPopupOpen = ref(false);
 const chatOtherUser = ref<{ id: string; username: string } | null>(null);
@@ -29,8 +39,17 @@ const chatId = ref<string | null>(null);
 
 const filteredProfiles = computed(() => {
   const needle = searchTerm.value.trim().toLowerCase();
+  const currentUserId = authStore.userId;
+  const friendIdSet = new Set(friendIds.value);
+  const sentRequestIdSet = new Set(sentRequestReceiverIds.value);
+
   return profiles.value
-    .filter((profile) => profile._id !== authStore.userId)
+    // Never show the current user
+    .filter((profile) => profile._id !== currentUserId)
+    // Omit users that are already friends
+    .filter((profile) => !friendIdSet.has(profile._id))
+    // Omit users the current user has already sent a friend request to
+    .filter((profile) => !sentRequestIdSet.has(profile._id))
     .filter((profile) =>
       needle ? profile.username.toLowerCase().includes(needle) : true
     );
@@ -40,13 +59,72 @@ const fetchProfiles = async () => {
   loading.value = true;
   fetchError.value = null;
   try {
-    // Get all user IDs
-    const { data: userIds } = await authApi.getAllUsers();
-    
+    const currentUserId = authStore.userId;
+
+    // Fetch all users plus this user's friends and sent friend requests
+    const [allUsersResponse, friendsResponse, sentRequestsResponse] =
+      await Promise.all([
+        authApi.getAllUsers(),
+        currentUserId
+          ? friendingApi.getFriends({ user: currentUserId })
+          : Promise.resolve({ data: [] as GetFriendsResponse[] }),
+        currentUserId
+          ? friendingApi.getSentRequests({ user: currentUserId })
+          : Promise.resolve({ data: [] as GetFriendRequestsResponse[] }),
+      ]);
+
+    const userIds = allUsersResponse.data;
+
+    // Capture friend IDs
+    const friendResponses = (friendsResponse.data || []) as GetFriendsResponse[];
+    friendIds.value = friendResponses.map((f) => f.friend);
+
+    // Capture IDs of users we've already sent friend requests to
+    const sentRequestResponses = (sentRequestsResponse.data ||
+      []) as GetFriendRequestsResponse[];
+
+    if (currentUserId) {
+      const sentReceiverPromises = sentRequestResponses.map(
+        async (requestResponse: GetFriendRequestsResponse) => {
+          try {
+            const { data: requestInfo } = await friendingApi.getRequestInfo({
+              friendRequest: requestResponse.friendRequest,
+            });
+
+            const { requester, receiver } =
+              requestInfo[0] || ({ requester: "", receiver: "" } as {
+                requester: string;
+                receiver: string;
+              });
+
+            if (!requester || !receiver) return null;
+
+            // If current user is requester, we care about the receiver (other user)
+            if (requester === currentUserId) return receiver;
+            // If current user somehow appears as receiver, exclude the requester instead
+            if (receiver === currentUserId) return requester;
+
+            return null;
+          } catch {
+            return null;
+          }
+        }
+      );
+
+      const sentReceivers = (await Promise.all(sentReceiverPromises)).filter(
+        (id): id is string => !!id
+      );
+      sentRequestReceiverIds.value = sentReceivers;
+    } else {
+      sentRequestReceiverIds.value = [];
+    }
+
     // Fetch username for each user ID
-    const userPromises = userIds.map(async (userResponse) => {
+    const userPromises = userIds.map(async (userResponse: any) => {
       try {
-        const { data: usernameResponse } = await authApi.getUsername({ user: userResponse.user });
+        const { data: usernameResponse } = await authApi.getUsername({
+          user: userResponse.user,
+        });
         return {
           _id: userResponse.user,
           username: usernameResponse[0]?.username || "Unknown",
@@ -59,9 +137,36 @@ const fetchProfiles = async () => {
         } as User;
       }
     });
-    
+
     const users = await Promise.all(userPromises);
     profiles.value = users;
+
+    // For each profile, check if there is an existing chat with the current user
+    if (currentUserId) {
+      const chatChecks = users.map(async (user) => {
+        if (user._id === currentUserId) return;
+        try {
+          const { data } = await chatApi.getChats({
+            userA: currentUserId,
+            userB: user._id,
+          });
+
+          if (Array.isArray(data)) {
+            const chats = (data as (GetChatsResponse | { error: string })[]).filter(
+              (item): item is GetChatsResponse => !("error" in item)
+            );
+            if (chats.length > 0 && chats[0]) {
+              // Store the first chat ID for this user
+              existingChatIds[user._id] = chats[0].chat;
+            }
+          }
+        } catch {
+          // Ignore chat lookup failures; button will remain \"Start Chat\"
+        }
+      });
+
+      await Promise.all(chatChecks);
+    }
   } catch (error) {
     fetchError.value =
       error instanceof Error ? error.message : "Unable to load profiles";
@@ -104,7 +209,20 @@ const startChat = async (userId: string) => {
       return;
     }
 
-    // Start or get the chat
+    // If we already know about an existing chat, just open it
+    const existingChatId = existingChatIds[userId];
+    if (existingChatId) {
+      chatOtherUser.value = {
+        id: userId,
+        username: userProfile.username,
+      };
+      chatId.value = existingChatId;
+      chatPopupOpen.value = true;
+      fetchError.value = null;
+      return;
+    }
+
+    // Otherwise, start or get the chat
     const startResponse = await chatApi.startChat({
       requester: authStore.userId,
       receiver: userId,
@@ -147,6 +265,10 @@ const startChat = async (userId: string) => {
       username: userProfile.username,
     };
     chatId.value = chatIdValue;
+    // Remember this chat for future \"Open Chat\" actions
+    if (chatIdValue) {
+      existingChatIds[userId] = chatIdValue;
+    }
     chatPopupOpen.value = true;
     fetchError.value = null;
   } catch (error) {
@@ -168,8 +290,8 @@ onMounted(fetchProfiles);
   <section class="friending">
     <header class="friending__header">
       <div>
-        <p class="friending__eyebrow">Discover classmates</p>
-        <h1>Connect with more students</h1>
+        <p class="friending__eyebrow">Discover network</p>
+        <h1>Connect with other fitness enthusiasts</h1>
         <p class="friending__subtitle">
           Browse profiles and send friend requests to grow your network.
         </p>
@@ -200,6 +322,7 @@ onMounted(fetchProfiles);
         :user="profile"
         :current-user-id="authStore.userId"
         :request-state="requestState[profile._id]"
+        :has-existing-chat="!!existingChatIds[profile._id]"
         @request-friend="sendFriendRequest"
         @start-chat="startChat"
       />

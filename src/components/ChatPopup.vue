@@ -173,6 +173,8 @@ watch(() => props.chatId, (newChatId) => {
             {{ msg.message }}
           </div>
           <div class="chat-popup__message-time">
+            {{ new Date(msg.time).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) }}
+            ·
             {{ new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
           </div>
         </div>

@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed, reactive } from "vue";
 import ProfilePage from "@/components/Profile-Page.vue";
+import ChatPopup from "@/components/ChatPopup.vue";
 import { useAuthStore } from "@/stores/auth";
 import { friendingApi } from "@/services/api/friendingApi";
 import { authApi } from "@/services/api/authApi";
+import { chatApi } from "@/services/api/chatApi";
 import type {
   User,
   GetFriendsResponse,
   GetFriendRequestsResponse,
 } from "@/types/friending";
+import type { GetChatsResponse } from "@/types/chat";
 
 type FriendWithUsername = User;
 
@@ -37,6 +40,14 @@ const loading = reactive({
 const pageError = ref<string | null>(null);
 const requestActionState = reactive<Record<string, "idle" | "accepting" | "declining">>({});
 
+// Track existing chats keyed by friend user ID
+const existingChatIds = reactive<Record<string, string>>({});
+
+// Chat popup state
+const chatPopupOpen = ref(false);
+const chatOtherUser = ref<{ id: string; username: string } | null>(null);
+const chatId = ref<string | null>(null);
+
 const isAuthenticated = computed(() => !!authStore.userId);
 
 const handleError = (error: unknown, fallback: string) => {
@@ -45,6 +56,34 @@ const handleError = (error: unknown, fallback: string) => {
   } else {
     pageError.value = fallback;
   }
+};
+
+const updateExistingChatsForFriends = async () => {
+  const currentUserId = authStore.userId;
+  if (!currentUserId) return;
+
+  const checks = friends.value.map(async (friend) => {
+    try {
+      const { data } = await chatApi.getChats({
+        userA: currentUserId,
+        userB: friend._id,
+      });
+
+      if (Array.isArray(data)) {
+        const chats = (data as (GetChatsResponse | { error: string })[]).filter(
+          (item): item is GetChatsResponse => !("error" in item)
+        );
+        if (chats.length > 0 && chats[0]) {
+          // Store the first chat ID for this friend
+          existingChatIds[friend._id] = chats[0].chat;
+        }
+      }
+    } catch {
+      // Ignore chat lookup failures
+    }
+  });
+
+  await Promise.all(checks);
 };
 
 const fetchFriends = async () => {
@@ -75,6 +114,9 @@ const fetchFriends = async () => {
     });
     
     friends.value = await Promise.all(friendPromises);
+
+    // After loading friends, check for existing chats with each friend
+    await updateExistingChatsForFriends();
   } catch (error) {
     handleError(error, "Unable to load friends.");
   } finally {
@@ -248,6 +290,91 @@ const cancelSentRequest = async (request: SentRequestWithUsername) => {
   }
 };
 
+const startChat = async (userId: string) => {
+  if (!authStore.userId) {
+    pageError.value = "You need to log in before starting a chat.";
+    return;
+  }
+
+  try {
+    // Find the friend profile to get their username
+    const friendProfile = friends.value.find((f) => f._id === userId);
+    if (!friendProfile) {
+      pageError.value = "User not found";
+      return;
+    }
+
+    // If we already know about an existing chat, just open it
+    const existingChatId = existingChatIds[userId];
+    if (existingChatId) {
+      chatOtherUser.value = {
+        id: userId,
+        username: friendProfile.username,
+      };
+      chatId.value = existingChatId;
+      chatPopupOpen.value = true;
+      pageError.value = null;
+      return;
+    }
+
+    // Otherwise, start or get the chat
+    const startResponse = await chatApi.startChat({
+      requester: authStore.userId,
+      receiver: userId,
+    });
+
+    if (startResponse.data && "error" in startResponse.data) {
+      pageError.value = startResponse.data.error;
+      return;
+    }
+
+    // Get the chat ID - try from startChat response first, then getChats
+    let chatIdValue: string | null = null;
+
+    if (startResponse.data && "chat" in startResponse.data) {
+      chatIdValue = startResponse.data.chat;
+    } else {
+      try {
+        const chatResponse = await chatApi.getChats({
+          userA: authStore.userId,
+          userB: userId,
+        });
+
+        if (Array.isArray(chatResponse.data)) {
+          const chats = (chatResponse.data as (GetChatsResponse | { error: string })[]).filter(
+            (item): item is GetChatsResponse => !("error" in item)
+          );
+          chatIdValue = chats.length > 0 && chats[0] ? chats[0].chat : null;
+        }
+      } catch (err) {
+        console.error("Failed to get chat ID:", err);
+      }
+    }
+
+    // Open the chat popup
+    chatOtherUser.value = {
+      id: userId,
+      username: friendProfile.username,
+    };
+    chatId.value = chatIdValue;
+    // Remember this chat for future "Open Chat" actions
+    if (chatIdValue) {
+      existingChatIds[userId] = chatIdValue;
+    }
+    chatPopupOpen.value = true;
+    pageError.value = null;
+  } catch (error) {
+    pageError.value =
+      error instanceof Error ? error.message : "Unable to start chat.";
+  }
+};
+
+const closeChatPopup = () => {
+  chatPopupOpen.value = false;
+  chatOtherUser.value = null;
+  chatId.value = null;
+};
+
 onMounted(() => {
   if (authStore.userId) {
     refreshData();
@@ -278,7 +405,12 @@ watch(
           Keep track of accepted friends and respond to incoming invitations.
         </p>
       </div>
-      <button class="friends__refresh" type="button" @click="refreshData" :disabled="loading.friends || loading.requests || loading.sentRequests">
+      <button
+        class="friends__refresh"
+        type="button"
+        @click="refreshData"
+        :disabled="loading.friends || loading.requests || loading.sentRequests"
+      >
         Refresh
       </button>
     </header>
@@ -307,7 +439,9 @@ watch(
             :key="friend._id"
             :user="friend"
             :current-user-id="authStore.userId"
+            :has-existing-chat="!!existingChatIds[friend._id]"
             disabled
+            @start-chat="startChat"
           />
         </div>
       </section>
@@ -378,6 +512,15 @@ watch(
       </section>
     </div>
   </section>
+
+  <ChatPopup
+    v-if="chatPopupOpen && chatOtherUser && authStore.userId"
+    :other-user-id="chatOtherUser.id"
+    :other-username="chatOtherUser.username"
+    :current-user-id="authStore.userId"
+    :chat-id="chatId"
+    @close="closeChatPopup"
+  />
 </template>
 
 <style scoped>

@@ -13,6 +13,7 @@ const props = defineProps<{
   currentUserId?: string | null;
   requestState?: "idle" | "pending" | "sent";
   disabled?: boolean;
+  hasExistingChat?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -42,6 +43,10 @@ const handleRequest = () => {
   if (!props.user || !canRequest.value) return;
   emit("request-friend", props.user._id);
 };
+
+const chatLabel = computed(() => {
+  return props.hasExistingChat ? "Open Chat" : "Start Chat";
+});
 
 const handleStartChat = () => {
   if (!props.user || isSelf.value) return;
@@ -81,7 +86,7 @@ const handleStartChat = () => {
         type="button"
         @click="handleStartChat"
       >
-        Start Chat
+        {{ chatLabel }}
       </button>
     </div>
   </article>
