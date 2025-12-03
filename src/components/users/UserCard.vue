@@ -27,3 +27,28 @@ onMounted(fetchCardData)
     <h3>{{ username }}</h3>
   </div>
 </template>
+<style scoped>
+.card {
+  background: rgb(62, 99, 62);
+  opacity: 80%;
+  padding: 4px;
+  max-width: 100px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  border-radius: 4px;
+
+  /* Interaction styling */
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.08);
+}
+</style>
