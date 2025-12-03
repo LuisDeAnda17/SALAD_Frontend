@@ -7,6 +7,8 @@ import type {
   UploadUserResponse,
   GetUsernameRequest,
   GetUsernameResponse,
+  GetUserRequest,
+  GetUserResponse,
 } from '@/types/api'
 import type { AxiosResponse } from 'axios'
 import { http } from './http'
@@ -26,6 +28,10 @@ export class AuthApi {
 
   async _getUsername(request: GetUsernameRequest): Promise<AxiosResponse<GetUsernameResponse>> {
     return http.post('/UserAuthentication/_getUsername', request)
+  }
+
+  async _getUser(request: GetUserRequest): Promise<AxiosResponse<GetUserResponse>> {
+    return http.post('/UserAuthentication/_getUser', request)
   }
 }
 

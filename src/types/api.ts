@@ -44,3 +44,24 @@ interface Username {
 }
 
 export type GetUsernameResponse = Username[]
+
+export interface GetUserRequest {
+  username: string
+}
+
+interface UserId {
+  user: string
+}
+
+export type GetUserResponse = UserId[]
+
+export interface GetInvitationRequest {
+  user: string
+  challenge: string
+}
+
+interface Invitation {
+  invitation: string
+}
+
+export type GetInvitationResponse = Invitation[]

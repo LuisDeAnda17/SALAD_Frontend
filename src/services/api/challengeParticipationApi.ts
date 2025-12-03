@@ -13,6 +13,14 @@ import type {
   GetUserParticipationsRequest,
   GetUserInvitationsResponse,
   GetUserParticipationsResponse,
+  GetChallengeInvitationsRequest,
+  GetChallengeInvitationsResponse,
+  GetInvitationRequest,
+  GetInvitationResponse,
+  GetChallengeParticipationsRequest,
+  GetChallengeParticipationsResponse,
+  GetParticipationRequest,
+  GetParticipationResponse,
 } from '@/types/challengeParticipation'
 
 export class ChallengeParticipationApi {
@@ -50,6 +58,30 @@ export class ChallengeParticipationApi {
     request: GetUserParticipationsRequest,
   ): Promise<AxiosResponse<GetUserParticipationsResponse>> {
     return http.post('/ChallengeParticipation/_getUserParticipations', request)
+  }
+
+  async _getChallengeInvitations(
+    request: GetChallengeInvitationsRequest,
+  ): Promise<AxiosResponse<GetChallengeInvitationsResponse>> {
+    return http.post('/ChallengeParticipation/_getChallengeInvitations', request)
+  }
+
+  async _getChallengeParticipations(
+    request: GetChallengeParticipationsRequest,
+  ): Promise<AxiosResponse<GetChallengeParticipationsResponse>> {
+    return http.post('/ChallengeParticipation/_getChallengeParticipations', request)
+  }
+
+  async _getInvitation(
+    request: GetInvitationRequest,
+  ): Promise<AxiosResponse<GetInvitationResponse>> {
+    return http.post('/ChallengeParticipation/_getInvitation', request)
+  }
+
+  async _getParticipation(
+    request: GetParticipationRequest,
+  ): Promise<AxiosResponse<GetParticipationResponse>> {
+    return http.post('/ChallengeParticipation/_getParticipation', request)
   }
 }
 

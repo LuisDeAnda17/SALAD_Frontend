@@ -157,7 +157,7 @@ onMounted(fetchChallengeData)
 <style scoped>
 .challenge-wrapper {
   color: white;
-  padding: 2rem;
+  padding: 1rem;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
