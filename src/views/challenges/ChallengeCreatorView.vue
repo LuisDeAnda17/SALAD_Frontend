@@ -33,19 +33,28 @@ const {
 } = challengeParticipationStore
 
 const selectedInviteeUsername = ref<string>('')
+const selectedInviteeNonexistent = ref<boolean>(false)
 const selectedInviteeToRemoveUsername = ref<string>('')
+const selectedInviteeToRemoveNonexistent = ref<boolean>(false)
+const selectedInviteeToRemoveNotInvited = ref<boolean>(false)
 const selectedParticipantToRemoveUsername = ref<string>('')
+const selectedParticipantToRemoveNonexistent = ref<boolean>(false)
+const selectedParticipantToRemoveNotParticipating = ref<boolean>(false)
 
 async function submitInvitation() {
+  clearWarnings()
   const selectedUser = await _getUser(selectedInviteeUsername.value)
   if (Array.isArray(selectedUser) && selectedUser[0] && sessionId.value) {
     const selectedUserId = selectedUser[0].user
     await createInvitation(sessionId.value, selectedUserId, challenge)
+  } else {
+    selectedInviteeNonexistent.value = true
   }
   await fetchChallengeData()
 }
 
 async function submitRemoveInvitation() {
+  clearWarnings()
   const selectedUser = await _getUser(selectedInviteeToRemoveUsername.value)
   if (Array.isArray(selectedUser) && selectedUser[0] && sessionId.value) {
     const selectedUserId = selectedUser[0].user
@@ -53,12 +62,17 @@ async function submitRemoveInvitation() {
     if (Array.isArray(invitationResult) && invitationResult[0]) {
       const invitation = invitationResult[0].invitation
       await removeInvitation(sessionId.value, invitation)
+    } else {
+      selectedInviteeToRemoveNotInvited.value = true
     }
+  } else {
+    selectedInviteeToRemoveNonexistent.value = true
   }
   await fetchChallengeData()
 }
 
 async function submitRemoveParticipation() {
+  clearWarnings()
   const selectedUser = await _getUser(selectedParticipantToRemoveUsername.value)
   if (Array.isArray(selectedUser) && selectedUser[0] && sessionId.value) {
     const selectedUserId = selectedUser[0].user
@@ -66,12 +80,17 @@ async function submitRemoveParticipation() {
     if (Array.isArray(participationResult) && participationResult[0]) {
       const participation = participationResult[0].participation
       await removeParticipation(sessionId.value, participation)
+    } else {
+      selectedParticipantToRemoveNotParticipating.value = true
     }
+  } else {
+    selectedParticipantToRemoveNonexistent.value = true
   }
   await fetchChallengeData()
 }
 
 async function submitDeleteChallenge() {
+  clearWarnings()
   if (sessionId.value) {
     await deleteChallenge(sessionId.value, challenge)
     await fetchChallengeData()
@@ -92,11 +111,19 @@ async function fetchChallengeData() {
   }
 }
 
+function clearWarnings() {
+  selectedInviteeNonexistent.value = false
+  selectedInviteeToRemoveNotInvited.value = false
+  selectedInviteeToRemoveNonexistent.value = false
+  selectedParticipantToRemoveNonexistent.value = false
+  selectedParticipantToRemoveNotParticipating.value = false
+}
+
 onMounted(fetchChallengeData)
 </script>
 
 <template>
-  <div class="challenge-creator-controls">
+  <div v-if="userId" class="challenge-creator-controls">
     <div class="people-controls">
       <div class="invitation-controls">
         <div class="invitees">
@@ -112,6 +139,9 @@ onMounted(fetchChallengeData)
             <button @click="submitInvitation">Invite</button>
           </div>
 
+          <!-- Warning: Nonexistent user -->
+          <p v-if="selectedInviteeNonexistent" class="warning-text">That user does not exist.</p>
+
           <!-- Remove Invitation Form -->
           <div class="remove-invitation-form form-card">
             <h4>Remove an Invitation</h4>
@@ -122,6 +152,14 @@ onMounted(fetchChallengeData)
             />
             <button @click="submitRemoveInvitation">Remove Invitation</button>
           </div>
+
+          <!-- Warnings for Remove Invitation -->
+          <p v-if="selectedInviteeToRemoveNonexistent" class="warning-text">
+            That user does not exist.
+          </p>
+          <p v-if="selectedInviteeToRemoveNotInvited" class="warning-text">
+            That user is not invited.
+          </p>
         </div>
       </div>
 
@@ -141,6 +179,14 @@ onMounted(fetchChallengeData)
           />
           <button @click="submitRemoveParticipation">Remove Participant</button>
         </div>
+
+        <!-- Warnings for Remove Participation -->
+        <p v-if="selectedParticipantToRemoveNonexistent" class="warning-text">
+          That user does not exist.
+        </p>
+        <p v-if="selectedParticipantToRemoveNotParticipating" class="warning-text">
+          That user is not participating.
+        </p>
       </div>
     </div>
 
@@ -161,8 +207,7 @@ onMounted(fetchChallengeData)
   flex-direction: column;
   gap: 2rem;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
   color: white;
   padding: 0.5rem;
 }
@@ -243,5 +288,13 @@ onMounted(fetchChallengeData)
 
 .delete-challenge-btn:hover {
   background: rgba(239, 68, 68, 0.3);
+}
+
+.warning-text {
+  color: rgba(255, 80, 80, 0.75);
+  font-size: 0.8rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
 }
 </style>
