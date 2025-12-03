@@ -68,10 +68,34 @@
 
     <div v-if="currentTab === 'publicGroups'">
       <h2>Public Groups</h2>
+
+      <input 
+        v-model="searchQuery" 
+        @input="searchGroups" 
+        placeholder="Search all groups..."
+        class="input"
+      />
+
+        <!-- 
+        If searchQuery is empty: show all public groups
+        If searchQuery has text: show searchResults only
+        -->
+
       <ul>
-        <li v-for="group in publicGroups" :key="group.group">
+        <li 
+          v-for="group in (searchQuery ? searchResults : publicGroups)" 
+          :key="group.group"
+        >
           <strong>{{ group.name }}</strong>
-          <button v-if="!isMember(group)" @click="joinGroup(group)">Join Group</button>
+
+          <button 
+            v-if="!isMember(group) && !hasRequested(group.group)"
+            @click="joinGroup(group)"
+          >
+            Request Join
+          </button>
+
+          <span v-else-if="hasRequested(group.group)">Request Sent</span>
           <span v-else>Already a member</span>
         </li>
       </ul>
@@ -101,6 +125,8 @@ import type {
   CreateResponse, 
 } from "@/types/group";
 
+import type { GetUsernameResponse } from "@/types/api";
+
 const authStore = useAuthStore();
 const userId = computed(() => authStore.user?._id);
 const session = computed(() => authStore.sessionId);
@@ -116,10 +142,17 @@ type GroupItem = {
 const currentTab = ref<"myGroups" | "ledGroups" | "publicGroups">("myGroups");
 
 const myGroups = ref<GroupItem[]>([]);
+const allGroups = ref<GroupItem[]>([]);
 const ledGroups = ref<GroupItem[]>([]);
 const publicGroups = ref<GroupItem[]>([]);
 const newGroupName = ref<string>("");
 const newGroupPrivate = ref<boolean>(false);
+
+const searchQuery = ref("");
+const searchResults = ref<GroupItem[]>([]);
+const sentRequests = ref<Set<string>>(new Set()); // store requested group IDs
+
+// GROUP QUERIES
 
 const fetchMyGroups = async () => {
   if (!userId.value) return;
@@ -128,12 +161,24 @@ const fetchMyGroups = async () => {
   myGroups.value = await Promise.all(
     res.groups.map(async (g: {group: string, leader: string, name: string}) => {
       const membersRes: GetMembersResponse = (await groupApi.getMembers({ group: g.group })).data;
+      const nameMembersRes: string[] = await Promise.all(
+      membersRes.members.map(async (m: string) => {
+        const username = (await authStore._getUsername(m));
+        
+        if (Array.isArray(username) && username[0]) {
+          return username[0].username
+        }
+
+        return 'Unknown';
+      }));
+      console.log('nameMembersRes',nameMembersRes);
+      const requestsRes: GetGroupRequestsResponse = (await groupApi.getGroupRequests({ group: g.group })).data;
       return {
         group: g.group,
         name: g.name,
         leader: g.leader,
-        members: membersRes.members,
-        requests: [],
+        members: nameMembersRes,
+        requests: requestsRes.requests,
       };
     })
   );
@@ -143,7 +188,7 @@ const fetchMyGroups = async () => {
 const fetchLedGroups = async () => {
 if (!userId.value) return;
 fetchMyGroups();
-console.log('fetching groups');
+console.log('fetching groups', myGroups.value);
   ledGroups.value = [];
   for (const group of myGroups.value) {
     if (group.leader === userId.value) {
@@ -180,7 +225,51 @@ if (!userId.value) return;
   );
 };
 
+const fetchAllGroups = async (): Promise<void> => {
+  if (!userId.value) return;
+  const res = (await groupApi.getPublicGroups()).data;
+  allGroups.value = res.groups.map((g: {group: string; name: string; leader: string}) => ({
+    group: g.group,
+    name: g.name,
+    leader: g.leader,
+    members: [],
+    requests: [],
+  }));
+}
+
+const fetchRequestedGroups = async(): Promise<void> => {
+  if (!userId.value) return;
+  const res = (await groupApi.getUserRequests({user: userId.value})).data;
+  sentRequests.value = new Set(res.requests.map(r => r.group));
+}
+
+const hasRequested = (groupId: string) => {
+  fetchRequestedGroups();
+  return sentRequests.value.has(groupId);
+}
+
 const isMember = (group: GroupItem) => myGroups.value.some((g) => g.group === group.group);
+
+// SEARCH Groups
+const searchGroups = async () => {
+  fetchAllGroups();
+  if (!searchQuery.value.trim()) {
+    searchResults.value = allGroups.value;
+    return;
+  }
+
+  const q = searchQuery.value.toLowerCase();
+
+  const publicMatches = allGroups.value.filter((g) => 
+    g.name.toLowerCase().includes(q)
+  );
+
+  const newPublicMatches = publicMatches.filter((g) => 
+    !myGroups.value.some((mg) => mg.group === g.group)
+  );
+
+  searchResults.value = newPublicMatches;
+}
 
 // REQUEST TO JOIN GROUP
 
