@@ -29,7 +29,10 @@ onMounted(fetchCardData)
 </template>
 <style scoped>
 .card {
-  background: rgb(62, 99, 62);
+  border-color: rgb(62, 99, 62, 0.5);
+  background-color: rgb(62, 99, 62, 0.2);
+  border-width: 2px;
+  border-style: solid;
   opacity: 80%;
   padding: 4px;
   max-width: 100px;

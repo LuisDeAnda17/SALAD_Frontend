@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import type {
-  ExerciseInfo,
-  RepAerobicInfo,
-  AnaerobicInfo,
-  DistanceAerobicInfo,
-} from '@/types/challengeDefinition'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeParticipationStore } from '@/stores/challengeParticipation'
-import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
 import UserList from '@/components/users/UserList.vue'
 const role = 'creator'
@@ -291,7 +284,7 @@ onMounted(fetchChallengeData)
 }
 
 .warning-text {
-  color: rgba(255, 80, 80, 0.75);
+  color: rgba(239, 68, 68, 0.5);
   font-size: 0.8rem;
   margin-top: -0.5rem;
   margin-bottom: 0.5rem;
