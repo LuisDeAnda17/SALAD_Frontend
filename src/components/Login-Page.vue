@@ -43,7 +43,6 @@
             </form>
         </div>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    </div>
 
     <button @click="toggleForm" class="btn btn-link">
         {{
@@ -52,6 +51,9 @@
             : "Already have an account? Login"
         }}
     </button>
+    </div>
+
+    
 </template>
 
 <script setup lang="ts">
@@ -141,13 +143,15 @@ input {
 }
 
 button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+    max-width: 400px;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top:0.7rem;
 }
 
 button:hover {

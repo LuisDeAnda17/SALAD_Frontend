@@ -83,13 +83,16 @@ nav {
 
 /* MAIN CONTENT AREA */
 .content {
-  width: 100%;
-  flex: 1;
-  padding-top: 24px;
-  /* Make sure it NEVER slides under navbar */
-
-  /* Optional but recommended to prevent strange brightness edges */
-  background-color: black;
+    width: 100%;
+    flex: 1;
+    padding-top: 24px;
+    background-color: black;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+    margin-top: 4rem;
 }
 
 /* ---- NAVBAR STYLING ---- */
