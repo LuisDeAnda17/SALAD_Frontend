@@ -159,6 +159,7 @@ nav {
     right: 0;
     position: fixed;
     margin-top: 4rem;
+    z-index: 1000;
 }
 
 /* ---- NAVBAR STYLING ---- */
