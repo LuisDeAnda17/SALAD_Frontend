@@ -244,15 +244,10 @@ async function resetForm() {
 
 <style scoped>
 /* FULL DARK THEME */
-:host {
-  background-color: #111;
-  color: white;
-  min-height: 100vh;
-}
 
 .content {
   max-width: 700px;
-  margin: 0 auto;
+  margin: 0;
   color: white;
 }
 
