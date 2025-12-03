@@ -5,6 +5,11 @@ const props = defineProps<{ challenges: Array<any>; role: any }>()
 </script>
 <template>
   <div>
-    <ChallengeCard v-for="c in challenges" :key="c.id" :challenge="c.challenge" :role="role" />
+    <ChallengeCard
+      v-for="c in challenges"
+      :key="c.challenge"
+      :challenge="c.challenge"
+      :role="role"
+    />
   </div>
 </template>

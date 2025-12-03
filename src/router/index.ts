@@ -10,6 +10,8 @@ import ChallengeParticipantView from '@/views/challenges/ChallengeParticipantVie
 import ChallengeInviteeView from '@/views/challenges/ChallengeInviteeView.vue'
 import CreateChallengeView from '@/views/challenges/CreateChallengeView.vue'
 import leaderboardView from '../views/leaderboardView.vue'
+import ChallengeInvitationsView from '@/views/challenges/ChallengeInvitationsView.vue'
+import FriendsView from '../views/FriendsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,18 +45,23 @@ const router = createRouter({
       component: FriendingView,
     },
     {
+      path: '/friends',
+      name: 'friends',
+      component: FriendsView,
+    },
+    {
       path: '/challenges',
       name: 'challenges',
       component: ChallengeHomeView,
     },
+    { path: '/invitations', name: 'invitations', component: ChallengeInvitationsView },
     {
-      path: '/challenge/:id',
+      path: '/challenge/:challenge',
       component: ChallengeView, // parent wrapper
       children: [
         { path: 'participant', component: ChallengeParticipantView },
         { path: 'invitee', component: ChallengeInviteeView },
         { path: 'creator', component: ChallengeCreatorView },
-        { path: '', component: ChallengeView }, // default
       ],
     },
     {

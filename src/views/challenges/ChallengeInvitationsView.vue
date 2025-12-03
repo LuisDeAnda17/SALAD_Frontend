@@ -17,22 +17,15 @@ const challengeDefinitionStore = useChallengeDefinitionStore()
 const { _getUserParticipations, _getUserInvitations } = challengeParticipationStore
 const { _getCreatedChallenges } = challengeDefinitionStore
 
-const participations = ref<Array<{ participation: string; challenge: string }>>([])
-
-const createdChallenges = ref<Array<{ challenge: string }>>([])
+const invitations = ref<Array<{ invitation: string; challenge: string }>>([])
 
 const fetchPageData = async () => {
   try {
     if (userId.value) {
-      const participationData = await _getUserParticipations(userId.value)
+      const invitationData = await _getUserInvitations(userId.value)
 
-      const createdChallengeData = await _getCreatedChallenges(userId.value)
-      if (Array.isArray(participationData)) {
-        participations.value = participationData
-      }
-
-      if (Array.isArray(createdChallengeData)) {
-        createdChallenges.value = createdChallengeData
+      if (Array.isArray(invitationData)) {
+        invitations.value = invitationData
       }
     }
   } catch (error) {
@@ -45,14 +38,10 @@ onMounted(fetchPageData)
 </script>
 
 <template>
-  <div v-if="user" id="challenge-home-wrapper">
+  <div v-if="user" id="challenge-invitations-wrapper">
     <div>
-      <h2>Your Challenges</h2>
-      <ChallengeList :challenges="participations" :role="'participant'" />
-    </div>
-    <div>
-      <h2>Challenges Created</h2>
-      <ChallengeList :challenges="createdChallenges" :role="'creator'" />
+      <h2>Invitations</h2>
+      <ChallengeList :challenges="invitations" :role="'invitee'" />
     </div>
   </div>
 </template>
@@ -65,7 +54,7 @@ h1 {
   top: -10px;
 }
 
-#challenge-home-wrapper {
+#challenge-invitations-wrapper {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
