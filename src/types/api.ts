@@ -30,6 +30,14 @@ export interface LogoutRequest {
   session: string
 }
 
+export interface GetUsername {
+  user: string;
+}
+
+export interface GetAllUsersResponse {
+  user: string;
+}
+
 // Error Response
 export interface ErrorResponse {
   error: string
