@@ -118,7 +118,7 @@ const closeChatPopup = () => {
 #app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
   background-color: black;
 }
@@ -153,11 +153,6 @@ nav {
     flex: 1;
     padding-top: 24px;
     background-color: black;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    position: fixed;
     margin-top: 4rem;
     z-index: 1000;
 }
