@@ -246,7 +246,6 @@ async function resetForm() {
 /* FULL DARK THEME */
 
 .content {
-  max-width: 700px;
   margin: 0;
   color: white;
 }
