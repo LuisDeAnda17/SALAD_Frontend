@@ -9,6 +9,7 @@ import type {
   GetUsernameResponse,
   GetUserRequest,
   GetUserResponse,
+  GetAllUsersResponse,
 } from '@/types/api'
 import type { AxiosResponse } from 'axios'
 import { http } from './http'
@@ -20,6 +21,10 @@ export class AuthApi {
 
   async register(request: UploadUserRequest): Promise<AxiosResponse<UploadUserResponse>> {
     return http.post('/UserAuthentication/uploadUser', request)
+  }
+
+  async getAllUsers(): Promise<AxiosResponse<GetAllUsersResponse[]>> {
+    return http.post('/UserAuthentication/_getAllUsers')
   }
 
   async logout(request: LogoutRequest): Promise<AxiosResponse<void>> {

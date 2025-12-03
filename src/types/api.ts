@@ -55,13 +55,6 @@ interface UserId {
 
 export type GetUserResponse = UserId[]
 
-export interface GetInvitationRequest {
+export interface GetAllUsersResponse {
   user: string
-  challenge: string
 }
-
-interface Invitation {
-  invitation: string
-}
-
-export type GetInvitationResponse = Invitation[]

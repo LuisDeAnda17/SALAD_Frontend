@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import ChatListPopup from './components/ChatListPopup.vue'
+import ChatPopup from './components/ChatPopup.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -10,6 +12,42 @@ const currentUser = computed(() => authStore.user?.username)
 const handleLogout = () => {
   authStore.logout()
   router.push('/login')
+}
+
+// Chat list popup state
+const chatListPopupOpen = ref(false)
+
+// Chat popup state
+const chatPopupOpen = ref(false)
+const chatOtherUser = ref<{ id: string; username: string } | null>(null)
+const chatId = ref<string | null>(null)
+
+const openChatList = () => {
+  chatListPopupOpen.value = true
+}
+
+const closeChatList = () => {
+  chatListPopupOpen.value = false
+}
+
+const openChatFromList = async (
+  chatIdValue: string,
+  otherUserId: string,
+  otherUsername: string,
+) => {
+  // Close chat list
+  chatListPopupOpen.value = false
+
+  // Set chat popup state
+  chatOtherUser.value = { id: otherUserId, username: otherUsername }
+  chatId.value = chatIdValue
+  chatPopupOpen.value = true
+}
+
+const closeChatPopup = () => {
+  chatPopupOpen.value = false
+  chatOtherUser.value = null
+  chatId.value = null
 }
 </script>
 
@@ -28,6 +66,7 @@ const handleLogout = () => {
             <router-link to="/group">Group</router-link>
             <router-link to="/friending">Friending</router-link>
             <router-link to="/invitations">Invitations</router-link>
+            <router-link to="/friends">Friends</router-link>
             <router-link to="/challenges">Challenges</router-link>
             <router-link to="/create">Create Challenge</router-link>
             <div class="user-menu">
@@ -46,6 +85,32 @@ const handleLogout = () => {
     <main class="content">
       <RouterView />
     </main>
+
+    <!-- Floating Chat Button -->
+    <button
+      v-if="authStore.isAuthenticated"
+      @click="openChatList"
+      class="floating-chat-btn"
+      aria-label="Open chats"
+    >
+      💬
+    </button>
+
+    <ChatListPopup
+      v-if="chatListPopupOpen && authStore.userId"
+      :current-user-id="authStore.userId"
+      @close="closeChatList"
+      @open-chat="openChatFromList"
+    />
+
+    <ChatPopup
+      v-if="chatPopupOpen && chatOtherUser && authStore.userId"
+      :other-user-id="chatOtherUser.id"
+      :other-username="chatOtherUser.username"
+      :current-user-id="authStore.userId"
+      :chat-id="chatId"
+      @close="closeChatPopup"
+    />
   </div>
 </template>
 
@@ -144,5 +209,39 @@ nav {
 
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.3);
+}
+
+.floating-chat-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.floating-chat-btn:hover {
+  background: #1d4ed8;
+  transform: scale(1.1);
+  box-shadow:
+    0 6px 16px rgba(37, 99, 235, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.floating-chat-btn:active {
+  transform: scale(0.95);
 }
 </style>
