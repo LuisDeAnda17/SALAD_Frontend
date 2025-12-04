@@ -54,6 +54,9 @@ onMounted(fetchPageData)
       <h2>Challenges Created</h2>
       <ChallengeList :challenges="createdChallenges" :role="'creator'" />
     </div>
+    <div>
+      <h2>Verification Requests</h2>
+    </div>
   </div>
 </template>
 

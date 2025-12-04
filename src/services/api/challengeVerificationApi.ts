@@ -7,6 +7,8 @@ import type {
   RemoveVerificationResponse,
   VerifyRequest,
   VerifyResponse,
+  GetRequesterActiveRequest,
+  GetRequesterActiveResponse,
 } from '@/types/challengeVerification'
 export class ChallengeVerificationApi {
   async createVerificationRequest(
@@ -22,7 +24,13 @@ export class ChallengeVerificationApi {
   }
 
   async verify(request: VerifyRequest): Promise<AxiosResponse<VerifyResponse>> {
-    return http.post('/verify', request)
+    return http.post('/verifyRequest', request)
+  }
+
+  async _getRequesterActiveRequests(
+    request: GetRequesterActiveRequest,
+  ): Promise<AxiosResponse<GetRequesterActiveResponse>> {
+    return http.post('/ChallengeVerification/_getRequesterActiveRequests', request)
   }
 }
 
