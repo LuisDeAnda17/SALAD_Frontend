@@ -1,48 +1,287 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeProgressStore } from '@/stores/challengeProgress'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
-import { useRoute } from 'vue-router'
+import { useChallengeParticipationStore } from '@/stores/challengeParticipation'
+import { useRoute, useRouter } from 'vue-router'
 
-const role = 'participant'
+const router = useRouter()
 const route = useRoute()
-const challenge = route.params.challenge as string // the UUID
+const challenge = route.params.challenge as string
+
+// Stores
 const authStore = useAuthStore()
-const { _getUsername, _getUser } = authStore
 const { userId, sessionId } = storeToRefs(authStore)
+
 const challengeDefinitionStore = useChallengeDefinitionStore()
-const { deleteChallenge, _getChallengeDetails } = challengeDefinitionStore
+const { _getChallengeDetails } = challengeDefinitionStore
 
 const challengeProgressStore = useChallengeProgressStore()
-
 const { _getParts, _getCompletedParts } = challengeProgressStore
-const challengeVerificationStore = useChallengeVerificationStore()
 
+const challengeVerificationStore = useChallengeVerificationStore()
 const { _getRequesterActiveRequests } = challengeVerificationStore
 
-const daysPerWeek = ref<number>(1)
-const weeks = ref<number>(1)
+const challengeParticipationStore = useChallengeParticipationStore()
+const { removeParticipation, _getParticipation } = challengeParticipationStore
 
+// State
+const daysPerWeek = ref(1)
+const weeks = ref(1)
+
+const parts = ref<Array<{ part: string; day: number; week: number }>>([])
 const completedParts = ref<Array<{ part: string; day: number; week: number }>>([])
 const activeRequests = ref<Array<{ part: string; verificationRequest: string }>>([])
 
-async function fetchParticipantData() {}
+const lockedMessage = ref('') // NEW: message explaining why a click failed
+let messageTimeout: any = null // for auto-clear timer
+
+async function submitLeaveChallenge() {
+  if (userId.value && sessionId.value) {
+    const result = await _getParticipation(userId.value, challenge)
+    if (Array.isArray(result) && result[0]) {
+      await removeParticipation(sessionId.value, result[0].participation)
+    }
+  }
+}
+
+async function fetchParticipantData() {
+  const details = await _getChallengeDetails(challenge)
+  if (Array.isArray(details) && details[0]) {
+    daysPerWeek.value = details[0].daysPerWeek
+    weeks.value = details[0].weeks
+  }
+
+  const partsResult = await _getParts(challenge)
+  if (Array.isArray(partsResult)) parts.value = partsResult
+
+  if (userId.value) {
+    const completedPartsResult = await _getCompletedParts(userId.value, challenge)
+    if (Array.isArray(completedPartsResult)) completedParts.value = completedPartsResult
+
+    const activeRequestsResult = await _getRequesterActiveRequests(userId.value, challenge)
+    if (Array.isArray(activeRequestsResult)) activeRequests.value = activeRequestsResult
+  }
+}
 
 onMounted(fetchParticipantData)
+
+// --- Helpers ---
+function getPartFor(day: number, week: number) {
+  return parts.value.find((p) => p.day === day && p.week === week)
+}
+
+function isCompleted(day: number, week: number) {
+  return completedParts.value.some((p) => p.day === day && p.week === week)
+}
+
+function isActiveRequest(day: number, week: number) {
+  const part = getPartFor(day, week)
+  if (!part) return false
+  return activeRequests.value.some((r) => r.part === part.part)
+}
+
+// --- Determine if empty cell is eligible ---
+function canClickEmptyCell(day: number, week: number) {
+  if (day === 1) return true // first cell in the column is always allowed
+
+  const prevCompleted = isCompleted(day - 1, week)
+  const prevRequested = isActiveRequest(day - 1, week)
+
+  return prevCompleted || prevRequested
+}
+
+// --- Show message when clicking locked cells ---
+function showLockedMessage() {
+  lockedMessage.value = 'You must request verification for the previous day first.'
+
+  if (messageTimeout) clearTimeout(messageTimeout)
+  messageTimeout = setTimeout(() => {
+    lockedMessage.value = ''
+  }, 5000)
+}
+
+function onCellClick(day: number, week: number) {
+  const completed = isCompleted(day, week)
+  const active = isActiveRequest(day, week)
+
+  if (completed || active) return // ignore colored cells entirely
+
+  const eligible = canClickEmptyCell(day, week)
+  if (!eligible) {
+    showLockedMessage()
+    return
+  }
+
+  const part = getPartFor(day, week)
+  if (!part) return
+
+  router.push({
+    path: `/challenge/${challenge}/createVerification`,
+    query: { challenge, part: part.part, day, week },
+  })
+}
 </script>
 
 <template>
-  <h2>Progress</h2>
+  <div v-if="userId" class="challenge-participant-wrapper">
+    <h2 class="progress-title">Progress</h2>
+
+    <div class="progress-grid">
+      <div v-for="week in weeks" :key="'week-' + week" class="week-column">
+        <div class="week-label">Week {{ week }}</div>
+
+        <div
+          v-for="day in daysPerWeek"
+          :key="'day-' + week + '-' + day"
+          class="cell"
+          :class="{
+            completed: isCompleted(day, week),
+            requested: !isCompleted(day, week) && isActiveRequest(day, week),
+            clickable:
+              !isCompleted(day, week) &&
+              !isActiveRequest(day, week) &&
+              canClickEmptyCell(day, week),
+            locked:
+              !isCompleted(day, week) &&
+              !isActiveRequest(day, week) &&
+              !canClickEmptyCell(day, week),
+          }"
+          @click="onCellClick(day, week)"
+        ></div>
+      </div>
+    </div>
+
+    <!-- NEW: Locked cell explanation -->
+    <p v-if="lockedMessage" class="locked-tip">{{ lockedMessage }}</p>
+
+    <div class="leave-challenge-controls">
+      <router-link :to="`/challenges`">
+        <button class="leave-challenge-btn" @click="submitLeaveChallenge">Leave Challenge</button>
+      </router-link>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
-  position: relative;
-  top: -10px;
+.challenge-participant-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-title {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.progress-grid {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.week-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.week-label {
+  color: white;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Base cell */
+.cell {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.25s ease;
+}
+
+/**************
+ CLICK STATES
+***************/
+
+/* Clickable empty cell */
+.cell.clickable {
+  cursor: pointer;
+}
+
+.cell.clickable:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Locked empty cell */
+.cell.locked {
+  background: rgba(255, 255, 255, 0.03); /* darker */
+  border-color: rgba(255, 255, 255, 0.1);
+  cursor: default;
+}
+
+/* No hover for locked */
+.cell.locked:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/**************
+ STATUS COLORS
+***************/
+
+.completed {
+  background: #2563eb;
+  border-color: rgba(37, 99, 235, 0.8);
+}
+
+.requested {
+  background: rgba(37, 99, 235, 0.35);
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+/**************
+ TIP MESSAGE
+***************/
+.locked-tip {
+  color: #f87171;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  opacity: 0.9;
+}
+
+.leave-challenge-controls {
+  display: flex;
+  justify-content: center;
+}
+
+.leave-challenge-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(239, 68, 68, 0.2);
+  color: white;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.leave-challenge-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
 }
 </style>
