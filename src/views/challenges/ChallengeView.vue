@@ -145,7 +145,7 @@ onMounted(fetchChallengeData)
 
         <!-- Distance Aerobic -->
         <div v-else-if="subcategory === 'distance'" class="challenge-specific">
-          <p><strong>Speed:</strong> {{ distanceSpeed }} km</p>
+          <p><strong>Speed:</strong> {{ distanceSpeed }} km/hr</p>
           <p><strong>Duration:</strong> {{ minutes }} minutes</p>
         </div>
       </div>

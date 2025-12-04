@@ -6,8 +6,22 @@ import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeProgressStore } from '@/stores/challengeProgress'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
 import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const challenge = route.params.challenge as string
+const part = route.params.challenge as string
+const day = route.params.day as string
+const week = route.params.day as string
+
+const challengeVerificationStore = useChallengeVerificationStore()
+const authStore = useAuthStore()
+const challengeDefinitionStore = useChallengeDefinitionStore()
+
+const { createVerificationRequest } = challengeVerificationStore
 </script>
 
-<template></template>
+<template>
+  <h2>Create Verification Request</h2>
+</template>
 
 <style scoped></style>

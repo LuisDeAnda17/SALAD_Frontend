@@ -12,6 +12,10 @@ import CreateChallengeView from '@/views/challenges/CreateChallengeView.vue'
 import leaderboardView from '../views/leaderboardView.vue'
 import ChallengeInvitationsView from '@/views/challenges/ChallengeInvitationsView.vue'
 import FriendsView from '../views/FriendsView.vue'
+import VerificationView from '@/views/challenges/VerificationView.vue'
+import VerificationApproverView from '@/views/challenges/VerificationApproverView.vue'
+import VerificationRequesterView from '@/views/challenges/VerificationRequesterView.vue'
+import CreateVerificationRequestView from '@/views/challenges/CreateVerificationRequestView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +66,9 @@ const router = createRouter({
         { path: 'participant', component: ChallengeParticipantView },
         { path: 'invitee', component: ChallengeInviteeView },
         { path: 'creator', component: ChallengeCreatorView },
+        { path: 'createVerification', component: CreateVerificationRequestView },
+        { path: 'requester', component: VerificationRequesterView },
+        { path: 'approver', component: VerificationApproverView },
       ],
     },
     {
