@@ -32,6 +32,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
   async function openChallenge(session: string, challenge: string) {
     try {
       const response = await challengeDefinitionApi.openChallenge({ session, challenge })
+      console.log(`openChallenge failed: ${response}`)
       return response.data
     } catch (error) {
       console.error('openChallenge failed:', error)
@@ -92,6 +93,19 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
     }
   }
 
+  async function _isOpen(challenge: string) {
+    try {
+      const response = await challengeDefinitionApi._isOpen({ challenge })
+      console.log(`_isOpen backend result: ${response}`)
+      console.log(`_isOpen backend data result: ${response.data}`)
+      console.log(`_isOpen backend data result: ${response.data}`)
+      return response.data
+    } catch (error) {
+      console.error('_isOpen failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
   return {
     //State
     //Actions
@@ -102,5 +116,6 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
     _getCreatedChallenges,
     _getChallengeDetails,
     _getCreator,
+    _isOpen,
   }
 })

@@ -14,7 +14,7 @@ const { _getUsername, _getUser } = authStore
 const { userId, sessionId } = storeToRefs(authStore)
 const challengeDefinitionStore = useChallengeDefinitionStore()
 const challengeParticipationStore = useChallengeParticipationStore()
-const { deleteChallenge } = challengeDefinitionStore
+const { deleteChallenge, openChallenge, closeChallenge, _isOpen } = challengeDefinitionStore
 const {
   createInvitation,
   removeInvitation,
@@ -33,6 +33,8 @@ const selectedInviteeToRemoveNotInvited = ref<boolean>(false)
 const selectedParticipantToRemoveUsername = ref<string>('')
 const selectedParticipantToRemoveNonexistent = ref<boolean>(false)
 const selectedParticipantToRemoveNotParticipating = ref<boolean>(false)
+
+const challengeOpen = ref<boolean>(false)
 
 async function submitInvitation() {
   clearWarnings()
@@ -90,6 +92,22 @@ async function submitDeleteChallenge() {
   }
 }
 
+async function submitOpenChallenge() {
+  clearWarnings()
+  if (sessionId.value) {
+    await openChallenge(sessionId.value, challenge)
+    await fetchChallengeData()
+  }
+}
+
+async function submitCloseChallenge() {
+  clearWarnings()
+  if (sessionId.value) {
+    await closeChallenge(sessionId.value, challenge)
+    await fetchChallengeData()
+  }
+}
+
 const invitations = ref<Array<{ invitation: string; user: string }>>([])
 const participations = ref<Array<{ participation: string; user: string }>>([])
 
@@ -101,6 +119,11 @@ async function fetchChallengeData() {
   const challengeParticipations = await _getChallengeParticipations(challenge)
   if (Array.isArray(challengeParticipations)) {
     participations.value = challengeParticipations
+  }
+  const challengeOpenResult = await _isOpen(challenge)
+  if (Array.isArray(challengeOpenResult) && challengeOpenResult[0]) {
+    console.log(`Result from backend for challenge open: ${challengeOpenResult[0].isOpen}`)
+    challengeOpen.value = challengeOpenResult[0].isOpen
   }
 }
 
@@ -182,6 +205,14 @@ onMounted(fetchChallengeData)
         </p>
       </div>
     </div>
+    <div class="open-controls">
+      <button v-if="!challengeOpen" class="open-challenge-btn" @click="submitOpenChallenge">
+        Open Challenge
+      </button>
+      <button v-if="challengeOpen" class="open-challenge-btn" @click="submitCloseChallenge">
+        Close Challenge
+      </button>
+    </div>
 
     <!-- Delete Challenge Button -->
     <div class="delete-challenge-section">
@@ -219,6 +250,12 @@ onMounted(fetchChallengeData)
   justify-content: center;
   gap: 2em;
 }
+
+.open-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
 .invitation-forms,
 .participation-controls > .remove-participation-form {
   display: flex;
@@ -255,7 +292,7 @@ onMounted(fetchChallengeData)
   background-color: #333;
   color: white;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: 0.2s ease;
 }
 
 .form-card button:hover {
@@ -266,7 +303,6 @@ onMounted(fetchChallengeData)
 .delete-challenge-section {
   display: flex;
   justify-content: center;
-  margin-top: 2rem;
 }
 
 .delete-challenge-btn {
@@ -289,5 +325,24 @@ onMounted(fetchChallengeData)
   margin-top: -0.5rem;
   margin-bottom: 0.5rem;
   padding-left: 0.25rem;
+}
+
+.open-challenge-btn {
+  border-color: rgb(62, 99, 62, 0.5);
+  background-color: rgb(62, 99, 62, 0.2);
+  border-width: 2px;
+  border-style: solid;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  border-radius: 4px;
+  color: white;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.open-challenge-btn:hover {
+  background-color: rgb(62, 99, 62, 0.3);
 }
 </style>

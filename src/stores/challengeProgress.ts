@@ -23,4 +23,11 @@ export const useChallengeProgressStore = defineStore('challengeProgress', () => 
       return { status: 'failed', error: error }
     }
   }
+
+  return {
+    //State
+    //Actions
+    _getCompletedParts,
+    _getParts,
+  }
 })

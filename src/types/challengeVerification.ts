@@ -1,5 +1,6 @@
 export interface CreateVerificationRequest {
   session: string
+  challenge: string
   part: string
   requester: string
   approver: string
@@ -28,3 +29,15 @@ export interface VerifyRequest {
 export interface VerifyResponse {
   status: string
 }
+
+export interface GetRequesterActiveRequest {
+  user: string
+  challenge: string
+}
+
+interface RequesterActiveRequest {
+  verificationRequest: string
+  part: string
+}
+
+export type GetRequesterActiveResponse = RequesterActiveRequest[]
