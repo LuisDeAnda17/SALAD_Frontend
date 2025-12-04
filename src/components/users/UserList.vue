@@ -1,25 +1,35 @@
 <script setup lang="ts">
 import UserCard from './UserCard.vue'
-import { ref, computed, onMounted, defineProps } from 'vue'
-const props = defineProps<{ users: Array<any> }>()
+import { defineProps, defineEmits } from 'vue'
+
+const props = defineProps<{ users: Array<{ user: string }> }>()
+
+// Emit when a user is clicked
+const emit = defineEmits<{
+  (e: 'select', userId: string): void
+}>()
+
+function selectUser(id: string) {
+  emit('select', id)
+}
 </script>
+
 <template>
   <div class="usercard-panel">
-    <UserCard v-for="u in users" :key="u.user" :user="u.user" />
+    <UserCard v-for="u in users" :key="u.user" :user="u.user" @click="selectUser(u.user)" />
   </div>
 </template>
+
 <style scoped>
 .usercard-panel {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 
-  /* Scroll behavior */
-  max-height: 400px; /* adjust as needed to fit your larger page */
+  max-height: 400px;
   overflow-y: auto;
-  padding-right: 4px; /* prevents scrollbar overlap */
+  padding-right: 4px;
 
-  /* Optional styling */
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 0.5rem;
