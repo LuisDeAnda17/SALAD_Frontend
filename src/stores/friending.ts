@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import type { User } from '../types/api'
 import { friendingApi } from '@/services/api/friendingApi'
 
-export const useFriendingStore = defineStore('challengeDefinition', () => {
+export const useFriendingStore = defineStore('friending', () => {
   async function _getFriends(user: string) {
     try {
       const response = await friendingApi.getFriends({ user })

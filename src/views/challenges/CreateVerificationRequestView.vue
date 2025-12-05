@@ -24,12 +24,16 @@ const friendingStore = useFriendingStore()
 const { _getFriends } = friendingStore
 
 // --- State ---
+const alreadyExists = ref(false)
 const selectedApproverUsername = ref('')
 const selectedEvidence = ref('')
 
 const friendIds = ref<string[]>([])
 const friendUsers = ref<Array<{ user: string }>>([])
 const friendUsernameLookup = ref<Record<string, string>>({})
+
+const submitted = ref(false)
+const failed = ref(false)
 
 // Select an approver when clicking a friend in the list
 function onFriendSelected(uuid: string) {
@@ -41,10 +45,16 @@ function onFriendSelected(uuid: string) {
 
 // Submit request
 async function submitVerificationRequest() {
-  if (!sessionId.value || !userId.value) return
+  if (!sessionId.value || !userId.value) {
+    failed.value = true
+    return
+  }
 
   const userResult = await _getUser(selectedApproverUsername.value)
-  if (!Array.isArray(userResult) || !userResult[0]) return
+  if (!Array.isArray(userResult) || !userResult[0]) {
+    failed.value = true
+    return
+  }
 
   const approver = userResult[0].user
 
@@ -56,10 +66,11 @@ async function submitVerificationRequest() {
     approver,
     selectedEvidence.value,
   )
+  submitted.value = true
 }
 
 // Load friend data
-async function fetchFriends() {
+async function fetchData() {
   if (!userId.value) return
 
   const friends = await _getFriends(userId.value)
@@ -76,11 +87,13 @@ async function fetchFriends() {
   }
 }
 
-onMounted(fetchFriends)
+onMounted(fetchData)
 </script>
 
 <template>
-  <div v-if="userId" class="verification-request-wrapper">
+  <div v-if="userId && !alreadyExists" class="verification-request-wrapper">
+    <h3 v-if="submitted">Challenge Created!</h3>
+    <h3 v-if="failed">Sorry, challenge creation failed!</h3>
     <h2 class="page-title">Create Verification Request</h2>
 
     <div class="request-form-container">
