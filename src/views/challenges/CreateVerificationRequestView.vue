@@ -92,8 +92,8 @@ onMounted(fetchData)
 
 <template>
   <div v-if="userId && !alreadyExists" class="verification-request-wrapper">
-    <h3 v-if="submitted">Challenge Created!</h3>
-    <h3 v-if="failed">Sorry, challenge creation failed!</h3>
+    <h3 v-if="submitted">Verification request created!</h3>
+    <h3 v-if="failed">Sorry, creating verification request failed!</h3>
     <h2 class="page-title">Create Verification Request</h2>
 
     <div class="request-form-container">
