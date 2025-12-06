@@ -9,7 +9,7 @@ import ChallengeCreatorView from '@/views/challenges/ChallengeCreatorView.vue'
 import ChallengeParticipantView from '@/views/challenges/ChallengeParticipantView.vue'
 import ChallengeInviteeView from '@/views/challenges/ChallengeInviteeView.vue'
 import CreateChallengeView from '@/views/challenges/CreateChallengeView.vue'
-import LeaderboardView from '@/views/LeaderboardView.vue'
+import leaderboardView from '@/views/leaderboardView.vue'
 import ChallengeInvitationsView from '@/views/challenges/ChallengeInvitationsView.vue'
 import FriendsView from '../views/FriendsView.vue'
 import VerificationApproverView from '@/views/challenges/VerificationApproverView.vue'
@@ -78,7 +78,7 @@ const router = createRouter({
     {
       path: '/leaderboard',
       name: 'leaderboard',
-      component: LeaderboardView,
+      component: leaderboardView,
     },
   ],
 })
