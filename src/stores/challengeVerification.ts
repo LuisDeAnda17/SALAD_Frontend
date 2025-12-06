@@ -79,6 +79,18 @@ export const useChallengeVerificationStore = defineStore('challengeVerification'
     }
   }
 
+  async function _getApproverActiveRequests(user: string) {
+    try {
+      const response = await challengeVerificationApi._getApproverActiveRequests({
+        user,
+      })
+      return response.data
+    } catch (error) {
+      console.error('_getApproverActiveRequests failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
   return {
     //State
     //Actions
@@ -87,5 +99,6 @@ export const useChallengeVerificationStore = defineStore('challengeVerification'
     verify,
     _getRequesterActiveRequests,
     _getRequestDetails,
+    _getApproverActiveRequests,
   }
 })

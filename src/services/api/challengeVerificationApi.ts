@@ -11,6 +11,8 @@ import type {
   GetRequesterActiveResponse,
   GetRequestDetailsRequest,
   GetRequestDetailsResponse,
+  GetApproverActiveRequest,
+  GetApproverActiveResponse,
 } from '@/types/challengeVerification'
 export class ChallengeVerificationApi {
   async createVerificationRequest(
@@ -39,6 +41,12 @@ export class ChallengeVerificationApi {
     request: GetRequestDetailsRequest,
   ): Promise<AxiosResponse<GetRequestDetailsResponse>> {
     return http.post('/ChallengeVerification/_getRequestDetails', request)
+  }
+
+  async _getApproverActiveRequests(
+    request: GetApproverActiveRequest,
+  ): Promise<AxiosResponse<GetApproverActiveResponse>> {
+    return http.post('/ChallengeVerification/_getApproverActiveRequests', request)
   }
 }
 
