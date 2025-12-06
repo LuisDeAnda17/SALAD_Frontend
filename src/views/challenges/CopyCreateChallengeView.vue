@@ -118,42 +118,6 @@ async function resetForm() {
     <h3 v-if="submitted">Challenge Created!</h3>
     <h3 v-if="failed">Sorry, challenge creation failed!</h3>
     <h1>Create Challenge</h1>
-
-    <!-- CATEGORY SELECTION -->
-    <div class="section">
-      <h2>Select Category</h2>
-      <div class="button-row">
-        <button
-          class="select-btn"
-          :class="{ active: category === 'aerobic' }"
-          @click="
-            () => {
-              category = 'aerobic'
-              subcategory = null
-              submitted = false
-              failed = false
-            }
-          "
-        >
-          Aerobic
-        </button>
-
-        <button
-          class="select-btn"
-          :class="{ active: category === 'anaerobic' }"
-          @click="
-            () => {
-              category = 'anaerobic'
-              subcategory = null
-              submitted = false
-              failed = false
-            }
-          "
-        >
-          Anaerobic
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
