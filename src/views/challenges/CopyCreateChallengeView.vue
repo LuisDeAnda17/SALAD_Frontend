@@ -113,7 +113,9 @@ async function resetForm() {
 }
 </script>
 
-<template></template>
+<template>
+  <div v-if="user" class="content"></div>
+</template>
 
 <style scoped>
 /* FULL DARK THEME */
