@@ -6,9 +6,11 @@ import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeProgressStore } from '@/stores/challengeProgress'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
 import { useRoute } from 'vue-router'
+import VerificationRequestDetails from '@/components/challenges/VerificationRequestDetails.vue'
 
 // --- Route ---
 const route = useRoute()
+const challenge = route.params.challenge as string
 const verificationRequest = route.query.verificationRequest as string
 
 // --- Stores ---
@@ -20,18 +22,6 @@ const challengeVerificationStore = useChallengeVerificationStore()
 const { createVerificationRequest, removeVerificationRequest, _getRequestDetails } =
   challengeVerificationStore
 
-const challengeProgressStore = useChallengeProgressStore()
-const { _getPartDayWeek } = challengeProgressStore
-
-const approver = ref<string>()
-const approverUsername = ref<string>()
-const requester = ref<string>()
-const requesterUsername = ref<string>()
-const evidence = ref<string>()
-const part = ref<string>()
-const day = ref<string>()
-const week = ref<string>()
-
 const showDeleteConfirm = ref(false)
 
 async function submitRemoveVerificationRequest() {
@@ -39,56 +29,13 @@ async function submitRemoveVerificationRequest() {
     await removeVerificationRequest(sessionId.value, verificationRequest)
   }
 }
-
-async function fetchData() {
-  const requestDetails = await _getRequestDetails(verificationRequest)
-  if (Array.isArray(requestDetails) && requestDetails[0]) {
-    approver.value = requestDetails[0].approver
-    const approverUsernameResult = await _getUsername(approver.value)
-    if (Array.isArray(approverUsernameResult) && approverUsernameResult[0]) {
-      approverUsername.value = approverUsernameResult[0].username
-    }
-    requester.value = requestDetails[0].requester
-    const requesterUsernameResult = await _getUsername(requester.value)
-    if (Array.isArray(requesterUsernameResult) && requesterUsernameResult[0]) {
-      requesterUsername.value = requesterUsernameResult[0].username
-    }
-    evidence.value = requestDetails[0].evidence
-    part.value = requestDetails[0].part
-    if (part.value) {
-      const dayWeekResult = await _getPartDayWeek([part.value])
-      if (
-        Array.isArray(dayWeekResult) &&
-        dayWeekResult[0] &&
-        dayWeekResult[0].part === part.value
-      ) {
-        day.value = dayWeekResult[0].day
-        week.value = dayWeekResult[0].week
-      }
-    }
-  }
-}
 </script>
 <template>
   <div v-if="userId" class="verification-panel">
-    <div class="verification-card">
-      <h3>Verification Request</h3>
-
-      <div class="info-row">
-        <p><strong>Week:</strong> {{ week }}</p>
-        <p><strong>Day:</strong> {{ day }}</p>
-      </div>
-
-      <div class="info-row">
-        <p><strong>Requester:</strong> {{ requesterUsername }}</p>
-        <p><strong>Approver:</strong> {{ approverUsername }}</p>
-      </div>
-
-      <div class="info-column">
-        <p><strong>Evidence:</strong></p>
-        <p class="evidence-box">{{ evidence }}</p>
-      </div>
-    </div>
+    <VerificationRequestDetails
+      :role="'requester'"
+      :verificationRequest="verificationRequest"
+    ></VerificationRequestDetails>
 
     <!-- DELETE SECTION -->
     <div class="delete-section">
@@ -105,9 +52,11 @@ async function fetchData() {
         </p>
 
         <div class="confirm-actions">
-          <button class="confirm-delete-btn" @click="submitRemoveVerificationRequest">
-            Yes, Delete
-          </button>
+          <router-link :to="`/challenge/${challenge}/participant`">
+            <button class="confirm-delete-btn" @click="submitRemoveVerificationRequest">
+              Yes, Delete
+            </button>
+          </router-link>
 
           <button class="cancel-delete-btn" @click="showDeleteConfirm = false">Cancel</button>
         </div>
@@ -121,44 +70,9 @@ async function fetchData() {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  width: 100%;
   justify-content: center;
   align-items: center;
   color: white;
-}
-
-/* Main info card */
-.verification-card {
-  background: #111;
-  padding: 1.5rem;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.95rem;
-}
-
-.info-column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.evidence-box {
-  background: #222;
-  padding: 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #444;
-  color: #ddd;
-  white-space: pre-wrap;
 }
 
 /* DELETE BUTTON SECTION */

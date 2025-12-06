@@ -66,7 +66,7 @@ const router = createRouter({
         { path: 'invitee', component: ChallengeInviteeView },
         { path: 'creator', component: ChallengeCreatorView },
         { path: 'createVerification', component: CreateVerificationRequestView },
-        { path: 'verificationRequest', component: VerificationRequesterView },
+        { path: 'requester', component: VerificationRequesterView },
         { path: 'approver', component: VerificationApproverView },
       ],
     },

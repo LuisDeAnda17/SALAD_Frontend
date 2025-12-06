@@ -4,11 +4,12 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
 import { useFriendingStore } from '@/stores/friending'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import UserList from '@/components/users/UserList.vue'
 
 // --- Route ---
 const route = useRoute()
+const router = useRouter()
 const challenge = route.params.challenge as string
 const part = route.query.part as string // passed from progress grid
 
@@ -32,7 +33,6 @@ const friendIds = ref<string[]>([])
 const friendUsers = ref<Array<{ user: string }>>([])
 const friendUsernameLookup = ref<Record<string, string>>({})
 
-const submitted = ref(false)
 const failed = ref(false)
 
 // Select an approver when clicking a friend in the list
@@ -58,7 +58,7 @@ async function submitVerificationRequest() {
 
   const approver = userResult[0].user
 
-  await createVerificationRequest(
+  const verificationRequestResult = await createVerificationRequest(
     sessionId.value,
     challenge,
     part,
@@ -66,7 +66,16 @@ async function submitVerificationRequest() {
     approver,
     selectedEvidence.value,
   )
-  submitted.value = true
+
+  if (verificationRequestResult && 'verificationRequest' in verificationRequestResult) {
+    const request = verificationRequestResult.verificationRequest
+    router.push({
+      path: `/challenge/${challenge}/requester`,
+      query: {
+        verificationRequest: request,
+      },
+    })
+  }
 }
 
 // Load friend data
@@ -92,7 +101,6 @@ onMounted(fetchData)
 
 <template>
   <div v-if="userId && !alreadyExists" class="verification-request-wrapper">
-    <h3 v-if="submitted">Verification request created!</h3>
     <h3 v-if="failed">Sorry, creating verification request failed!</h3>
     <h2 class="page-title">Create Verification Request</h2>
 

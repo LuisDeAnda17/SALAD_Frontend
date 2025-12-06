@@ -119,7 +119,7 @@ function onCellClick(day: number, week: number) {
     if (!req) return
 
     router.push({
-      path: `/challenge/${challenge}/verificationRequest`,
+      path: `/challenge/${challenge}/requester`,
       query: {
         verificationRequest: req.verificationRequest,
       },
