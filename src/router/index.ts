@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
-import GroupView from '../views/GroupView.vue'
+import * as GroupView from '../views/GroupView.vue'
 import FriendingView from '../views/FriendingView.vue'
 import ChallengeHomeView from '@/views/challenges/ChallengeHomeView.vue'
 import ChallengeView from '@/views/challenges/ChallengeView.vue'
