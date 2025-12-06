@@ -23,8 +23,8 @@ const requester = ref<string>()
 const requesterUsername = ref<string>()
 const evidence = ref<string>()
 const part = ref<string>()
-const day = ref<string>()
-const week = ref<string>()
+const day = ref<number>()
+const week = ref<number>()
 
 async function fetchData() {
   const requestDetails = await _getRequestDetails(props.verificationRequest)

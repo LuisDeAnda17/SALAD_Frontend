@@ -56,3 +56,13 @@ interface RequestDetails {
 }
 
 export type GetRequestDetailsResponse = RequestDetails[]
+
+export interface GetApproverActiveRequest {
+  user: string
+}
+
+interface ApproverActiveRequest {
+  verificationRequest: string
+}
+
+export type GetApproverActiveResponse = ApproverActiveRequest[]

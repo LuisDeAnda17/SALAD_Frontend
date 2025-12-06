@@ -26,7 +26,8 @@ const level = ref<number>(1)
 const daysPerWeek = ref<number>(1)
 const weeks = ref<number>(1)
 const info = ref<ExerciseInfo | null>(null)
-const creator = ref<string>(user.value ? user.value.username : '')
+const creator = ref<string>('')
+const creatorUsername = ref<string>('')
 
 const category = computed(() => {
   if (info.value) {
@@ -112,7 +113,17 @@ async function fetchChallengeData() {
       info.value = challengeDetails.info
     }
   }
-
+  const challengeCreatorResult = await _getCreator(challenge)
+  if (Array.isArray(challengeCreatorResult)) {
+    const challengeCreator = challengeCreatorResult[0]
+    if (challengeCreator) {
+      creator.value = challengeCreator.creator
+      const creatorUsernameResult = await _getUsername(creator.value)
+      if (Array.isArray(creatorUsernameResult) && creatorUsernameResult[0]) {
+        creatorUsername.value = creatorUsernameResult[0].username
+      }
+    }
+  }
   console.log('details:', challengeDetailsResult)
 }
 
@@ -123,7 +134,7 @@ onMounted(fetchChallengeData)
   <div class="challenge-wrapper">
     <div class="challenge-info">
       <h2 class="challenge-title">{{ exercise }} ⋅ Level {{ level }}</h2>
-      <p class="creator">Created by: {{ creator }}</p>
+      <p class="creator">Created by: {{ creatorUsername }}</p>
       <div class="challenge-card">
         <div class="challenge-general">
           <p><strong>Days per Week:</strong> {{ daysPerWeek }}</p>

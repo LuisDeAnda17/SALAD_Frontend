@@ -39,9 +39,12 @@ onMounted(fetchPageData)
 
 <template>
   <div v-if="user" id="challenge-invitations-wrapper">
-    <div>
+    <div class="invitations-column">
       <h2>Invitations</h2>
       <ChallengeList :challenges="invitations" :role="'invitee'" />
+      <h4 v-if="invitations.length === 0" class="empty-msg">
+        You have not been invited to any challenges yet.
+      </h4>
     </div>
   </div>
 </template>
@@ -61,5 +64,19 @@ h1 {
   gap: 24px;
   align-items: start;
   color: white;
+}
+
+.empty-msg {
+  color: rgb(188, 188, 188);
+  padding-top: 2rem;
+  max-width: 80%;
+  text-align: center;
+}
+
+.invitations-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
 }
 </style>

@@ -4,6 +4,8 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeParticipationStore } from '@/stores/challengeParticipation'
+import { useChallengeVerificationStore } from '@/stores/challengeVerification'
+import VerificationRequestList from '@/components/challenges/VerificationRequestList.vue'
 import { useRouter } from 'vue-router'
 import ChallengeList from '@/components/challenges/ChallengeList.vue'
 
@@ -13,13 +15,17 @@ const { user, userId, sessionId } = storeToRefs(authStore)
 
 const challengeParticipationStore = useChallengeParticipationStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
+const challengeVerificationStore = useChallengeVerificationStore()
 
 const { _getUserParticipations, _getUserInvitations } = challengeParticipationStore
 const { _getCreatedChallenges } = challengeDefinitionStore
+const { _getApproverActiveRequests } = challengeVerificationStore
 
 const participations = ref<Array<{ participation: string; challenge: string }>>([])
 
 const createdChallenges = ref<Array<{ challenge: string }>>([])
+
+const verificationRequests = ref<Array<{ verificationRequest: string }>>([])
 
 const fetchPageData = async () => {
   try {
@@ -34,6 +40,12 @@ const fetchPageData = async () => {
       if (Array.isArray(createdChallengeData)) {
         createdChallenges.value = createdChallengeData
       }
+
+      const verificationRequestResult = await _getApproverActiveRequests(userId.value)
+
+      if (Array.isArray(verificationRequestResult)) {
+        verificationRequests.value = verificationRequestResult
+      }
     }
   } catch (error) {
     console.error('Error loading initial data:', error)
@@ -46,16 +58,29 @@ onMounted(fetchPageData)
 
 <template>
   <div v-if="user" id="challenge-home-wrapper">
-    <div>
+    <div class="home-column">
       <h2>Your Challenges</h2>
       <ChallengeList :challenges="participations" :role="'participant'" />
+      <h4 v-if="participations.length === 0" class="empty-msg">
+        You are currently not participating in any challenges.
+      </h4>
     </div>
-    <div>
+    <div class="home-column">
       <h2>Challenges Created</h2>
       <ChallengeList :challenges="createdChallenges" :role="'creator'" />
+      <h4 v-if="createdChallenges.length === 0" class="empty-msg">
+        You have not created any challenges.
+      </h4>
     </div>
-    <div>
+    <div class="home-column">
       <h2>Verification Requests</h2>
+      <VerificationRequestList
+        :verificationRequests="verificationRequests"
+        :role="'approver'"
+      ></VerificationRequestList>
+      <h4 v-if="verificationRequests.length === 0" class="empty-msg">
+        No one has requested verification from you yet.
+      </h4>
     </div>
   </div>
 </template>
@@ -75,5 +100,19 @@ h1 {
   gap: 24px;
   align-items: start;
   color: white;
+}
+
+.empty-msg {
+  color: rgb(188, 188, 188);
+  padding-top: 1rem;
+  max-width: 80%;
+  text-align: center;
+}
+
+.home-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
 }
 </style>

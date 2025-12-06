@@ -29,8 +29,8 @@ export interface GetPartDayWeekRequest {
 
 interface PartDayWeek {
   part: string
-  day: string
-  week: string
+  day: number
+  week: number
 }
 
 export type GetPartDayWeekResponse = PartDayWeek[]
