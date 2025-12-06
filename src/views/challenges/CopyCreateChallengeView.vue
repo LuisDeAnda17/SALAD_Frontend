@@ -17,6 +17,100 @@ const { user, userId, sessionId } = storeToRefs(authStore)
 const challengeDefinitionStore = useChallengeDefinitionStore()
 
 const { createChallenge } = challengeDefinitionStore
+
+const exercise = ref<string>('')
+const level = ref<number>(1)
+const weeks = ref<number>(1)
+const daysPerWeek = ref<number>(1)
+const category = ref<'aerobic' | 'anaerobic' | null>(null)
+const subcategory = ref<'distance' | 'rep' | null>(null)
+const weight = ref<number | null>(null) // kg
+const reps = ref<number>(1)
+const sets = ref<number>(1)
+const repSpeed = ref<number>(0) // reps/minute
+const minutes = ref<number>(1)
+const distanceSpeed = ref<number>(0) // km/hr
+
+const submitted = ref(false)
+const failed = ref(false)
+
+const repAerobicInfo = computed(() => {
+  if (category.value !== 'aerobic' || subcategory.value !== 'rep') {
+    return null
+  }
+  return {
+    _type: 'RepAerobicInfo',
+    repSpeed: repSpeed.value,
+    minutes: minutes.value,
+  } as RepAerobicInfo
+})
+
+const distanceAerobicInfo = computed(() => {
+  if (category.value !== 'aerobic' || subcategory.value !== 'distance') {
+    return null
+  }
+  return {
+    _type: 'DistanceAerobicInfo',
+    distanceSpeed: distanceSpeed.value,
+    minutes: minutes.value,
+  } as DistanceAerobicInfo
+})
+
+const anaerobicInfo = computed(() => {
+  if (category.value !== 'anaerobic') {
+    return null
+  }
+  return {
+    _type: 'AnaerobicInfo',
+    weight: weight.value ? weight.value : undefined,
+    reps: reps.value,
+    sets: sets.value,
+  } as AnaerobicInfo
+})
+
+const exerciseInfo = computed(() => {
+  if (anaerobicInfo.value) {
+    return anaerobicInfo.value
+  } else if (repAerobicInfo.value) {
+    return repAerobicInfo.value
+  } else if (distanceAerobicInfo.value) {
+    return distanceAerobicInfo.value
+  }
+})
+
+async function submitChallenge() {
+  if (category.value && sessionId.value && exerciseInfo.value) {
+    const result = await createChallenge(
+      sessionId.value,
+      exercise.value,
+      daysPerWeek.value,
+      weeks.value,
+      level.value,
+      exerciseInfo.value,
+    )
+    if (result.status === 'failed') {
+      failed.value = true
+    } else {
+      submitted.value = true
+    }
+    await resetForm()
+  }
+}
+
+async function resetForm() {
+  category.value = null
+  subcategory.value = null
+  exercise.value = ''
+  level.value = 1
+  weeks.value = 1
+  daysPerWeek.value = 1
+  reps.value = 1
+  minutes.value = 1
+  distanceSpeed.value = 0
+  repSpeed.value = 0
+  sets.value = 1
+  weight.value = null
+}
 </script>
 
 <template></template>
