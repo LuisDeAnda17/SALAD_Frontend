@@ -24,10 +24,21 @@ export const useChallengeProgressStore = defineStore('challengeProgress', () => 
     }
   }
 
+  async function _getPartDayWeek(parts: Array<string>) {
+    try {
+      const response = await challengeProgressApi._getPartDayWeek({ parts })
+      return response.data
+    } catch (error) {
+      console.error('_getPartDayWeek failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
   return {
     //State
     //Actions
     _getCompletedParts,
     _getParts,
+    _getPartDayWeek,
   }
 })
