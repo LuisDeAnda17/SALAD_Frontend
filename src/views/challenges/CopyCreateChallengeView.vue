@@ -114,7 +114,69 @@ async function resetForm() {
 </script>
 
 <template>
-  <div v-if="user" class="content"></div>
+  <div v-if="user" class="content">
+    <h3 v-if="submitted">Challenge Created!</h3>
+    <h3 v-if="failed">Sorry, challenge creation failed!</h3>
+    <h1>Create Challenge</h1>
+
+    <!-- CATEGORY SELECTION -->
+    <div class="section">
+      <h2>Select Category</h2>
+      <div class="button-row">
+        <button
+          class="select-btn"
+          :class="{ active: category === 'aerobic' }"
+          @click="
+            () => {
+              category = 'aerobic'
+              subcategory = null
+              submitted = false
+              failed = false
+            }
+          "
+        >
+          Aerobic
+        </button>
+
+        <button
+          class="select-btn"
+          :class="{ active: category === 'anaerobic' }"
+          @click="
+            () => {
+              category = 'anaerobic'
+              subcategory = null
+              submitted = false
+              failed = false
+            }
+          "
+        >
+          Anaerobic
+        </button>
+      </div>
+    </div>
+
+    <!-- SUBCATEGORY SELECTION (AEROBIC ONLY) -->
+    <div v-if="category === 'aerobic'" class="section">
+      <h2>Select Aerobic Type</h2>
+      <div class="button-row">
+        <button
+          class="select-btn"
+          :class="{ active: subcategory === 'distance' }"
+          @click="subcategory = 'distance'"
+        >
+          Distance
+        </button>
+
+        <button
+          class="select-btn"
+          :class="{ active: subcategory === 'rep' }"
+          @click="subcategory = 'rep'"
+        >
+          Repetition
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
