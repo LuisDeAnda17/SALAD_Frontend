@@ -124,6 +124,7 @@ async function resetForm() {
       <div class="button-row">
         <button
           class="select-btn"
+          :class="{ active: category === 'aerobic' }"
           @click="
             () => {
               category = 'aerobic'
