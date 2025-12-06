@@ -78,6 +78,13 @@ const exerciseInfo = computed(() => {
   }
 })
 
+async function selectAerobic() {
+  category.value = 'aerobic'
+  subcategory.value = null
+  submitted.value = false
+  failed.value = false
+}
+
 async function submitChallenge() {
   if (category.value && sessionId.value && exerciseInfo.value) {
     const result = await createChallenge(
@@ -125,14 +132,7 @@ async function resetForm() {
         <button
           class="select-btn"
           :class="{ active: category === 'aerobic' }"
-          @click="
-            () => {
-              category = 'aerobic'
-              subcategory = null
-              submitted = false
-              failed = false
-            }
-          "
+          @click="selectAerobic"
         >
           Aerobic
         </button>
