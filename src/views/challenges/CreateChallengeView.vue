@@ -123,9 +123,9 @@ async function resetForm() {
     <div class="section">
       <h2>Select Category</h2>
       <div class="button-row">
+        <!-- add back later: :class="{ active: category === 'aerobic' }"-->
         <button
           class="select-btn"
-          :class="{ active: category === 'aerobic' }"
           @click="
             () => {
               category = 'aerobic'
@@ -137,10 +137,9 @@ async function resetForm() {
         >
           Aerobic
         </button>
-
+        <!-- add back later: :class="{ active: category === 'anaerobic' }"-->
         <button
           class="select-btn"
-          :class="{ active: category === 'anaerobic' }"
           @click="
             () => {
               category = 'anaerobic'
@@ -159,21 +158,11 @@ async function resetForm() {
     <div v-if="category === 'aerobic'" class="section">
       <h2>Select Aerobic Type</h2>
       <div class="button-row">
-        <button
-          class="select-btn"
-          :class="{ active: subcategory === 'distance' }"
-          @click="subcategory = 'distance'"
-        >
-          Distance
-        </button>
+        <!-- add back later: :class="{ active: subcategory === 'distance' }"-->
+        <button class="select-btn" @click="subcategory = 'distance'">Distance</button>
 
-        <button
-          class="select-btn"
-          :class="{ active: subcategory === 'rep' }"
-          @click="subcategory = 'rep'"
-        >
-          Repetition
-        </button>
+        <!-- add back later: :class="{ active: subcategory === 'rep' }"-->
+        <button class="select-btn" @click="subcategory = 'rep'">Repetition</button>
       </div>
     </div>
 
