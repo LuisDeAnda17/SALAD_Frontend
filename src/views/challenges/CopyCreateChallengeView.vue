@@ -121,22 +121,7 @@ async function resetForm() {
     <!-- CATEGORY SELECTION -->
     <div class="section">
       <h2>Select Category</h2>
-      <div class="button-row">
-        <button
-          class="select-btn"
-          :class="{ active: category === 'aerobic' }"
-          @click="
-            () => {
-              category = 'aerobic'
-              subcategory = null
-              submitted = false
-              failed = false
-            }
-          "
-        >
-          Aerobic
-        </button>
-      </div>
+      <div class="button-row"></div>
     </div>
   </div>
 </template>
