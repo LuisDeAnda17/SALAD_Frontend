@@ -22,15 +22,3 @@ interface Part {
 }
 
 export type GetPartsResponse = Part[]
-
-export interface GetPartDayWeekRequest {
-  parts: Array<string>
-}
-
-interface PartDayWeek {
-  part: string
-  day: string
-  week: string
-}
-
-export type GetPartDayWeekResponse = PartDayWeek[]
