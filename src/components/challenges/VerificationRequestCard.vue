@@ -59,7 +59,12 @@ onMounted(fetchData)
 </script>
 
 <template>
-  <router-link :to="`/challenge/${challenge}/${role}`" :query="{ verificationRequest }">
+  <router-link
+    :to="{
+      path: `/challenge/${challenge}/${role}`,
+      query: { verificationRequest: verificationRequest },
+    }"
+  >
     <div class="card">
       <h3>{{ exercise }} ⋅ Level {{ level }}</h3>
       <h4>Week {{ week }} Day {{ day }}</h4>

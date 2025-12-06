@@ -42,34 +42,32 @@ async function submitRejectRequest() {
       :role="'approver'"
       :verificationRequest="verificationRequest"
     ></VerificationRequestDetails>
-  </div>
-  <!-- RESPONSE SECTION -->
-  <div class="approve-section">
-    <router-link :to="`/challenges`">
-      <button class="approve-btn" @click="submitApproveRequest">
-        Approve Verification Request
+    <!-- RESPONSE SECTION -->
+    <div class="approve-section">
+      <router-link :to="`/challenges`">
+        <button class="approve-btn" @click="submitApproveRequest">Approve</button>
+      </router-link>
+    </div>
+    <div class="reject-section">
+      <!-- initial delete button -->
+      <button v-if="!showRejectConfirm" class="reject-btn" @click="showRejectConfirm = true">
+        Reject
       </button>
-    </router-link>
-  </div>
-  <div class="reject-section">
-    <!-- initial delete button -->
-    <button v-if="!showRejectConfirm" class="reject-btn" @click="showRejectConfirm = true">
-      Reject Verification Request
-    </button>
 
-    <!-- confirmation box -->
-    <div v-if="showRejectConfirm" class="reject-confirm-card">
-      <p class="warning-title">Are you sure?</p>
-      <p class="warning-desc">
-        This action cannot be undone. This verification request will be permanently deleted.
-      </p>
+      <!-- confirmation box -->
+      <div v-if="showRejectConfirm" class="reject-confirm-card">
+        <p class="warning-title">Are you sure?</p>
+        <p class="warning-desc">
+          This action cannot be undone. This verification request will be permanently deleted.
+        </p>
 
-      <div class="confirm-actions">
-        <router-link :to="`/challenges`">
-          <button class="confirm-delete-btn" @click="submitRejectRequest">Yes, Reject</button>
-        </router-link>
+        <div class="confirm-actions">
+          <router-link :to="`/challenges`">
+            <button class="confirm-reject-btn" @click="submitRejectRequest">Yes, Reject</button>
+          </router-link>
 
-        <button class="cancel-delete-btn" @click="showRejectConfirm = false">Cancel</button>
+          <button class="cancel-reject-btn" @click="showRejectConfirm = false">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -78,7 +76,7 @@ async function submitRejectRequest() {
 .verification-panel {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
   justify-content: center;
   align-items: center;
   color: white;
