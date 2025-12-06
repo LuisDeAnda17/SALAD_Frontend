@@ -6,6 +6,33 @@ import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeProgressStore } from '@/stores/challengeProgress'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
 import { useRoute } from 'vue-router'
+import VerificationRequestDetails from '@/components/challenges/VerificationRequestDetails.vue'
+
+// --- Route ---
+const route = useRoute()
+const challenge = route.params.challenge as string
+const verificationRequest = route.query.verificationRequest as string
+
+// --- Stores ---
+const authStore = useAuthStore()
+const { userId, sessionId } = storeToRefs(authStore)
+const { _getUser, _getUsername } = authStore
 </script>
-<template></template>
-<style scoped></style>
+<template>
+  <div v-if="userId" class="verification-panel">
+    <VerificationRequestDetails
+      :role="'requester'"
+      :verificationRequest="verificationRequest"
+    ></VerificationRequestDetails>
+  </div>
+</template>
+<style scoped>
+.verification-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+</style>

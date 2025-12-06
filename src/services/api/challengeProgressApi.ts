@@ -5,6 +5,8 @@ import type {
   GetCompletedPartsResponse,
   GetPartsRequest,
   GetPartsResponse,
+  GetPartDayWeekRequest,
+  GetPartDayWeekResponse,
 } from '@/types/challengeProgress'
 
 export class ChallengeProgressApi {
@@ -15,6 +17,12 @@ export class ChallengeProgressApi {
     request: GetCompletedPartsRequest,
   ): Promise<AxiosResponse<GetCompletedPartsResponse>> {
     return http.post('/ChallengeProgress/_getCompletedParts', request)
+  }
+
+  async _getPartDayWeek(
+    request: GetPartDayWeekRequest,
+  ): Promise<AxiosResponse<GetPartDayWeekResponse>> {
+    return http.post('/ChallengeProgress/_getPartDayWeek', request)
   }
 }
 

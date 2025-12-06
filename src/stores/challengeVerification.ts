@@ -67,6 +67,18 @@ export const useChallengeVerificationStore = defineStore('challengeVerification'
     }
   }
 
+  async function _getRequestDetails(verificationRequest: string) {
+    try {
+      const response = await challengeVerificationApi._getRequestDetails({
+        verificationRequest,
+      })
+      return response.data
+    } catch (error) {
+      console.error('_getRequesterDetails failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
   return {
     //State
     //Actions
@@ -74,5 +86,6 @@ export const useChallengeVerificationStore = defineStore('challengeVerification'
     removeVerificationRequest,
     verify,
     _getRequesterActiveRequests,
+    _getRequestDetails,
   }
 })
