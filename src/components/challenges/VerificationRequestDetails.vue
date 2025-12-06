@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, defineProps } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useChallengeProgressStore } from '@/stores/challengeProgress'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
