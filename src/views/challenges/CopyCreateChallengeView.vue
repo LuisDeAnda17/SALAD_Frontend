@@ -9,6 +9,14 @@ import type {
   AnaerobicInfo,
   DistanceAerobicInfo,
 } from '@/types/challengeDefinition'
+
+const authStore = useAuthStore()
+
+const { user, userId, sessionId } = storeToRefs(authStore)
+
+const challengeDefinitionStore = useChallengeDefinitionStore()
+
+const { createChallenge } = challengeDefinitionStore
 </script>
 
 <template></template>
