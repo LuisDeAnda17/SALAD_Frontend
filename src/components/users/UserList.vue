@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import UserCard from './UserCard.vue'
+import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps<{ users: Array<{ user: string }> }>()
 

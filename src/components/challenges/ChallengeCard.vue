@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineProps } from 'vue'
 import { storeToRefs } from 'pinia'
 import type { ExerciseInfo } from '@/types/challengeDefinition'
 import { useAuthStore } from '@/stores/auth'

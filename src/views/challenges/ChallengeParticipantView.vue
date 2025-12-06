@@ -36,8 +36,8 @@ const parts = ref<Array<{ part: string; day: number; week: number }>>([])
 const completedParts = ref<Array<{ part: string; day: number; week: number }>>([])
 const activeRequests = ref<Array<{ part: string; verificationRequest: string }>>([])
 
-const lockedMessage = ref('')
-let messageTimeout: any = null
+const lockedMessage = ref('') // NEW: message explaining why a click failed
+let messageTimeout: any = null // for auto-clear timer
 
 async function submitLeaveChallenge() {
   if (userId.value && sessionId.value) {
@@ -69,7 +69,7 @@ async function fetchParticipantData() {
 
 onMounted(fetchParticipantData)
 
-// Helpers
+// --- Helpers ---
 function getPartFor(day: number, week: number) {
   return parts.value.find((p) => p.day === day && p.week === week)
 }
@@ -84,8 +84,9 @@ function isActiveRequest(day: number, week: number) {
   return activeRequests.value.some((r) => r.part === part.part)
 }
 
+// --- Determine if empty cell is eligible ---
 function canClickEmptyCell(day: number, week: number) {
-  if (day === 1) return true
+  if (day === 1) return true // first cell in the column is always allowed
 
   const prevCompleted = isCompleted(day - 1, week)
   const prevRequested = isActiveRequest(day - 1, week)
@@ -93,6 +94,7 @@ function canClickEmptyCell(day: number, week: number) {
   return prevCompleted || prevRequested
 }
 
+// --- Show message when clicking locked cells ---
 function showLockedMessage() {
   lockedMessage.value = 'You must request verification for the previous day first.'
 
@@ -102,41 +104,24 @@ function showLockedMessage() {
   }, 5000)
 }
 
-// UPDATED CLICK HANDLER
 function onCellClick(day: number, week: number) {
   const completed = isCompleted(day, week)
   const active = isActiveRequest(day, week)
-  const part = getPartFor(day, week)
 
-  if (!part) return
+  if (completed || active) return // ignore colored cells entirely
 
-  // If completed, ignore
-  if (completed) return
-
-  // NEW: Active request → navigate to view page
-  if (active) {
-    const req = activeRequests.value.find((r) => r.part === part.part)
-    if (!req) return
-
-    router.push({
-      path: `/challenge/${challenge}/requester`,
-      query: {
-        verificationRequest: req.verificationRequest,
-      },
-    })
-    return
-  }
-
-  // Empty cell logic
   const eligible = canClickEmptyCell(day, week)
   if (!eligible) {
     showLockedMessage()
     return
   }
 
+  const part = getPartFor(day, week)
+  if (!part) return
+
   router.push({
     path: `/challenge/${challenge}/createVerification`,
-    query: { part: part.part, day, week },
+    query: { challenge, part: part.part, day, week },
   })
 }
 </script>
@@ -165,20 +150,12 @@ function onCellClick(day: number, week: number) {
               !isActiveRequest(day, week) &&
               !canClickEmptyCell(day, week),
           }"
-          :data-tooltip="
-            isActiveRequest(day, week)
-              ? 'View Request'
-              : !isCompleted(day, week) &&
-                  !isActiveRequest(day, week) &&
-                  canClickEmptyCell(day, week)
-                ? 'Create Request'
-                : ''
-          "
           @click="onCellClick(day, week)"
         ></div>
       </div>
     </div>
 
+    <!-- NEW: Locked cell explanation -->
     <p v-if="lockedMessage" class="locked-tip">{{ lockedMessage }}</p>
 
     <div class="leave-challenge-controls">
@@ -229,7 +206,6 @@ function onCellClick(day: number, week: number) {
 
 /* Base cell */
 .cell {
-  position: relative;
   width: 2rem;
   height: 2rem;
   border-radius: 4px;
@@ -238,30 +214,9 @@ function onCellClick(day: number, week: number) {
   transition: all 0.25s ease;
 }
 
-/************************************
-  TOOLTIP
-*************************************/
-.cell[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(20, 20, 20, 0.9);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  color: white;
-  font-size: 0.7rem;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 1;
-  transition: opacity 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-/************************************
-  CLICK STATES
-*************************************/
+/**************
+ CLICK STATES
+***************/
 
 /* Clickable empty cell */
 .cell.clickable {
@@ -274,46 +229,36 @@ function onCellClick(day: number, week: number) {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Locked cell */
+/* Locked empty cell */
 .cell.locked {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.03); /* darker */
   border-color: rgba(255, 255, 255, 0.1);
   cursor: default;
 }
 
-/* No hover effect */
+/* No hover for locked */
 .cell.locked:hover {
   transform: none;
+  background: rgba(255, 255, 255, 0.03);
 }
 
-/************************************
-  STATUS COLORS
-*************************************/
+/**************
+ STATUS COLORS
+***************/
 
-/* Completed */
 .completed {
   background: #2563eb;
   border-color: rgba(37, 99, 235, 0.8);
-  cursor: default;
 }
 
-/* Active request */
 .requested {
   background: rgba(37, 99, 235, 0.35);
   border-color: rgba(37, 99, 235, 0.45);
-  cursor: pointer;
 }
 
-/* Hover for active request */
-.requested:hover {
-  background: rgba(37, 99, 235, 0.5);
-  border-color: rgba(37, 99, 235, 0.7);
-  transform: scale(1.06);
-}
-
-/************************************
-  MESSAGES
-*************************************/
+/**************
+ TIP MESSAGE
+***************/
 .locked-tip {
   color: #f87171;
   font-size: 0.85rem;

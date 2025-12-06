@@ -41,18 +41,3 @@ interface RequesterActiveRequest {
 }
 
 export type GetRequesterActiveResponse = RequesterActiveRequest[]
-
-export interface GetRequestDetailsRequest {
-  verificationRequest: string
-}
-
-interface RequestDetails {
-  part: string
-  evidence: string
-  challenge: string
-  approver: string
-  requester: string
-  approved: string
-}
-
-export type GetRequestDetailsResponse = RequestDetails[]
