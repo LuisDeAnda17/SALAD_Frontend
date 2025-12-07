@@ -28,6 +28,11 @@ const { _getFriends } = friendingStore
 const alreadyExists = ref(false)
 const selectedApproverUsername = ref('')
 const selectedEvidence = ref('')
+// today's date as YYYY-MM-DD
+const todayStr = new Date().toISOString().split('T')[0]
+
+// bind to the input as a string
+const dateCompletedStr = ref(todayStr)
 
 const friendIds = ref<string[]>([])
 const friendUsers = ref<Array<{ user: string }>>([])
@@ -56,6 +61,10 @@ async function submitVerificationRequest() {
     return
   }
 
+  if (!dateCompletedStr.value) {
+    return
+  }
+
   const approver = userResult[0].user
 
   const verificationRequestResult = await createVerificationRequest(
@@ -65,6 +74,7 @@ async function submitVerificationRequest() {
     userId.value,
     approver,
     selectedEvidence.value,
+    new Date(dateCompletedStr.value),
   )
 
   if (verificationRequestResult && 'verificationRequest' in verificationRequestResult) {
@@ -106,6 +116,10 @@ onMounted(fetchData)
 
     <div class="request-form-container">
       <!-- Approver selection -->
+      <div class="form-card">
+        <h4>Date Completed</h4>
+        <input type="date" v-model="dateCompletedStr" :max="todayStr" />
+      </div>
       <div class="form-card">
         <h4>Select Approver</h4>
         <input
