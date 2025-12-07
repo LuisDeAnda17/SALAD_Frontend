@@ -45,76 +45,73 @@ export interface GetGroupsRequest {
     user: string
 }
 
-export interface GetGroupsResponse {
-    groups: {group: string; name: string; leader: string}[]
-}
+export type GetGroupsResponse =
+   {group: string; name: string; leader: string}[];
 
 export interface GetMembersRequest {
     group: string
 }
 
-export interface GetMembersResponse {
-    members: string[]
-}
+export type GetMembersResponse = 
+     string[]
+
 
 export interface GetLeaderRequest {
     group: string
 }
 
-export interface GetLeaderResponse {
+export type GetLeaderResponse = {
     leader: string
-}
+}[];
 
 export interface GetNameRequest {
     group: string
 }
 
-export interface GetNameResponse {
+export type GetNameResponse = {
     name: string
-}
+}[];
 
 export interface IsPrivateRequest {
     group: string
 }
 
-export interface IsPrivateResponse {
+export type IsPrivateResponse = {
     isPrivate: boolean
-}
+}[]
 
-export interface GetPublicGroupsResponse {
-    groups: {group: string; name: string; leader: string}[]
-}
+export type GetPublicGroupsResponse = 
+    {group: string; name: string; leader: string}[]
+
 
 
 export interface GetGroupRequestsRequest {
     group: string;
 }
 
-export interface GetGroupRequestsResponse {
-    requests: {
+export type GetGroupRequestsResponse = {
         membershipRequest: string;
-        requester: string;
+        requester: string; 
     }[];
-}
+
 
 export interface GetUserRequestsRequest {
     user: string;
 }
 
-export interface GetUserRequestsResponse {
-    requests: {
+export type GetUserRequestsResponse =
+    {
         membershipRequest: string;
         group: string;
     }[];
-}
+
 
 export interface GetRequestDetailsRequest {
     membershipRequest: string;
 }
 
-export interface GetRequestDetailsResponse {
-    details: {
+export type GetRequestDetailsResponse = 
+    {
         user: string;
         group: string;
     }[];
-}

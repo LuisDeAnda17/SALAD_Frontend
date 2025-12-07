@@ -43,25 +43,68 @@
     </div>
 
     <div v-if="currentTab === 'ledGroups'">
-      
       <ul>
         <li v-for="group in ledGroups" :key="group.group">
           <strong>{{ group.name }}</strong>
+          <div>
+            <button @click="showModal[group.group] = true">Show Info</button>
+
+            <!-- Modal -->
+            <div 
+              v-if="showModal[group.group]" 
+              class="modal-overlay" 
+              @click.self="showModal[group.group] = false"
+            >
+              <div class="modal-content">
+
+                <h2>{{ group.name }} - Info</h2>
+
+                <!-- REQUESTS SECTION -->
+                <button 
+                  class="section-toggle"
+                  @click="expandedRequests[group.group] = !expandedRequests[group.group]"
+                >
+                  {{ expandedRequests[group.group] ? 'Hide Requests' : 'Show Requests' }}
+                </button>
+
+                <div v-if="expandedRequests[group.group]" class="modal-section">
+                  <h4>Membership Requests</h4>
+                  <ul>
+                    <li v-for="request in group.requests" :key="request.membershipRequest">
+                      {{ request.requester }}
+                      <button @click="acceptRequest(group, request)">Accept</button>
+                      <button @click="denyRequest(group, request)">Deny</button>
+                    </li>
+                  </ul>
+                </div>
+
+
+                <!-- MEMBERS SECTION -->
+                <button 
+                  class="section-toggle"
+                  @click="expandedMembers[group.group] = !expandedMembers[group.group]"
+                >
+                  {{ expandedMembers[group.group] ? 'Hide Members' : 'Show Members' }}
+                </button>
+
+                <div v-if="expandedMembers[group.group]" class="modal-section">
+                  <h4>Members</h4>
+                  <ul>
+                    <li v-for="member in group.members" :key="member">{{ member }}</li>
+                  </ul>
+                </div>
+
+                <!-- CLOSE BUTTON -->
+                <button class="close-btn" @click="showModal[group.group] = false">
+                  Close
+                </button>
+
+              </div>
+            </div>
+          </div>
+
           <button @click="deleteGroup(group)">Delete Group</button>
 
-          <h4>Membership Requests</h4>
-          <ul>
-            <li v-for="request in group.requests" :key="request.membershipRequest">
-              {{ request.requester }}
-              <button @click="acceptRequest(group, request)">Accept</button>
-              <button @click="denyRequest(group, request)">Deny</button>
-            </li>
-          </ul>
-
-          <h4>Members</h4>
-          <ul>
-            <li v-for="member in group.members" :key="member">{{ member }}</li>
-          </ul>
         </li>
       </ul>
     </div>
@@ -141,6 +184,12 @@ type GroupItem = {
 
 const currentTab = ref<"myGroups" | "ledGroups" | "publicGroups">("myGroups");
 
+// MODAL STATE
+const expandedRequests = ref<Record<string, boolean>>({});
+const expandedMembers = ref<Record<string, boolean>>({});
+const showModal = ref<Record<string, boolean>>({});
+
+// GROUP STATE
 const myGroups = ref<GroupItem[]>([]);
 const allGroups = ref<GroupItem[]>([]);
 const ledGroups = ref<GroupItem[]>([]);
@@ -148,9 +197,33 @@ const publicGroups = ref<GroupItem[]>([]);
 const newGroupName = ref<string>("");
 const newGroupPrivate = ref<boolean>(false);
 
+// SEARCH STATE
 const searchQuery = ref("");
 const searchResults = ref<GroupItem[]>([]);
 const sentRequests = ref<Set<string>>(new Set()); // store requested group IDs
+
+// MAPPER FROM IDS TO USERNAMES
+const idToUsernames = ref<Record<string, string>>({});
+
+// HELPER FUNCTIONS
+
+const idsToUsernames = async (ids: string[]): Promise<string[]> => {
+  return Promise.all(
+    ids.map(async (id) => {
+      if (id in idToUsernames.value && idToUsernames.value[id]) {
+        return idToUsernames.value[id];
+      }
+      const res: GetUsernameResponse | { status: string, error: unknown; } = (await authStore._getUsername(id));
+      console.log('username res', res);
+      if (Array.isArray(res) && res[0] && res[0].username) {
+        idToUsernames.value[id] = res[0].username;
+        return res[0].username;
+      }
+      return "Unknown";
+    })
+  );
+};
+
 
 // GROUP QUERIES
 
@@ -159,26 +232,18 @@ const fetchMyGroups = async () => {
   const res: GetGroupsResponse = (await groupApi.getGroups({ user: userId.value })).data;
   console.log('res', res);
   myGroups.value = await Promise.all(
-    res.groups.map(async (g: {group: string, leader: string, name: string}) => {
+    res.map(async (g: {group: string, leader: string, name: string}) => {
       const membersRes: GetMembersResponse = (await groupApi.getMembers({ group: g.group })).data;
-      const nameMembersRes: string[] = await Promise.all(
-      membersRes.members.map(async (m: string) => {
-        const username = (await authStore._getUsername(m));
-        
-        if (Array.isArray(username) && username[0]) {
-          return username[0].username
-        }
-
-        return 'Unknown';
-      }));
+      const nameMembersRes: string[] = await idsToUsernames(membersRes);
       console.log('nameMembersRes',nameMembersRes);
       const requestsRes: GetGroupRequestsResponse = (await groupApi.getGroupRequests({ group: g.group })).data;
+      console.log('requestsRes', requestsRes);
       return {
         group: g.group,
         name: g.name,
         leader: g.leader,
         members: nameMembersRes,
-        requests: requestsRes.requests,
+        requests: requestsRes,
       };
     })
   );
@@ -193,13 +258,32 @@ console.log('fetching groups', myGroups.value);
   for (const group of myGroups.value) {
     if (group.leader === userId.value) {
       const requestsRes: GetGroupRequestsResponse = (await groupApi.getGroupRequests({ group: group.group })).data;
+
+      const requestsResWithUsernames: {membershipRequest: string, requester: string}[] = await Promise.all (
+        requestsRes.map(async (r: {membershipRequest: string, requester: string}) => {
+          const username = (await idsToUsernames([r.requester]))[0];
+          if (!username) {
+            return {
+              membershipRequest: r.membershipRequest,
+              requester: "Unknown"
+            };
+          }
+          return {
+            membershipRequest: r.membershipRequest,
+            requester: username,
+          };
+        }));
+      
+      updateModalState(group.group);
+
       ledGroups.value.push({
       group: group.group, 
       name: group.name,
       leader: group.leader,
       members: group.members,
-      requests: requestsRes.requests 
+      requests: requestsResWithUsernames 
       });
+
     }
   }
   console.log('ledGroups', ledGroups.value);
@@ -208,17 +292,23 @@ console.log('fetching groups', myGroups.value);
 const fetchPublicGroups = async (): Promise<void> => {
 if (!userId.value) return;
   const res = (await groupApi.getPublicGroups()).data;
+  // FILTERING OUT GROUPS WE ARE ALREADY IN 
+  const newGroups = res.filter((g: {group: string; name: string; leader: string}) => {
+    return !myGroups.value.some((mg) => mg.group === g.group);
+  });
   
   console.log('public groups res', res);
   publicGroups.value = 
     await Promise.all(
-    res.groups.map(async (g: {group: string; name: string; leader: string}) => {
+    newGroups.map(async (g: {group: string; name: string; leader: string}) => {
       const members = (await groupApi.getMembers({ group: g.group })).data;
+      console.log('members', members);
+      const nameMembersRes: string[] = await idsToUsernames(members);
       return {
       group: g.group,
       name: g.name,
       leader: g.leader,
-      members: members.members,
+      members: nameMembersRes,
       requests: [],
       }
     })
@@ -228,7 +318,7 @@ if (!userId.value) return;
 const fetchAllGroups = async (): Promise<void> => {
   if (!userId.value) return;
   const res = (await groupApi.getPublicGroups()).data;
-  allGroups.value = res.groups.map((g: {group: string; name: string; leader: string}) => ({
+  allGroups.value = res.map((g: {group: string; name: string; leader: string}) => ({
     group: g.group,
     name: g.name,
     leader: g.leader,
@@ -240,15 +330,30 @@ const fetchAllGroups = async (): Promise<void> => {
 const fetchRequestedGroups = async(): Promise<void> => {
   if (!userId.value) return;
   const res = (await groupApi.getUserRequests({user: userId.value})).data;
-  sentRequests.value = new Set(res.requests.map(r => r.group));
+  sentRequests.value = new Set(res.map((r: {group: string, membershipRequest: string}) => r.group));
 }
 
 const hasRequested = (groupId: string) => {
-  fetchRequestedGroups();
   return sentRequests.value.has(groupId);
 }
 
+// MODIFY MODAL STATE
+const updateModalState = (groupId: string) => {
+  if (!(groupId in showModal.value)) {
+    showModal.value[groupId] = false;
+  }
+  if (!(groupId in expandedRequests.value)) {
+    expandedRequests.value[groupId] = false;
+  }
+  if (!(groupId in expandedMembers.value)) {
+    expandedMembers.value[groupId] = false;
+  }
+};
+
+
+// CHECK IS MEMBER
 const isMember = (group: GroupItem) => myGroups.value.some((g) => g.group === group.group);
+
 
 // SEARCH Groups
 const searchGroups = async () => {
@@ -279,7 +384,10 @@ if (!session.value) return;
   const isPrivateRes: IsPrivateResponse = (await groupApi.isPrivate({ group: group.group })).data;
   const request: RequestGroupRequest = { session: session.value, user: userId.value, group: group.group };
   const requestId: RequestGroupResponse = (await groupApi.request(request)).data;
-  if (!isPrivateRes.isPrivate) {
+  if (!isPrivateRes[0]) {
+    return;
+  }
+  if (!isPrivateRes[0].isPrivate) {
     const request: AcceptGroupRequest = { session: session.value, membershipRequest: requestId.membershipRequest };
     await groupApi.accept(request);
     alert("Joined public group automatically");
@@ -287,6 +395,8 @@ if (!session.value) return;
     alert("Request sent to join private group");
   }
   await fetchMyGroups();
+  await fetchLedGroups();
+  await fetchRequestedGroups();
 };
 
 // LEAVE GROUP
@@ -368,6 +478,8 @@ const denyRequest = async (group: GroupItem, request: { membershipRequest: strin
 onMounted(async () => {
   await fetchMyGroups();
   await fetchLedGroups();
+  await fetchMyGroups();
+  await fetchRequestedGroups();
   await fetchPublicGroups();
 });
 
@@ -432,5 +544,65 @@ button {
 .create-group-form button {
   padding: 6px 12px;
 }
+
+/* Fullscreen overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* Modal card */
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  padding: 20px;
+  border-radius: 10px;
+  overflow-y: auto; /* enables scrolling */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* Section toggle buttons */
+.section-toggle {
+  margin: 10px 0;
+  padding: 6px 10px;
+  width: 100%;
+  text-align: left;
+  background: #eee;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Scrollable section */
+.modal-section {
+  margin: 10px 0;
+  padding: 10px;
+  background: #b2b1b16f;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  color: black;
+}
+
+/* Close button */
+.close-btn {
+  margin-top: 20px;
+  background: #d33;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: 100%;
+  text-align: center;
+}
+
 
 </style>
