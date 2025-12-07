@@ -11,6 +11,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
+import { formatDate } from '@/utils/date-utils'
 
 const route = useRoute()
 const challenge = route.params.challenge as string // the UUID
@@ -31,6 +32,7 @@ const creator = ref<string>('')
 const creatorUsername = ref<string>('')
 const name = ref<string>('')
 const dateCreated = ref<Date>()
+const dateCreatedString = ref<string>()
 
 const category = computed(() => {
   if (info.value) {
@@ -136,6 +138,7 @@ async function fetchChallengeData() {
   const dateCreatedResult = await _getDateCreated(challenge)
   if (Array.isArray(dateCreatedResult) && dateCreatedResult[0]) {
     dateCreated.value = dateCreatedResult[0].dateCreated
+    dateCreatedString.value = formatDate(dateCreated.value)
   }
   console.log('details:', challengeDetailsResult)
 }

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeParticipationStore } from '@/stores/challengeParticipation'
 import { useRouter } from 'vue-router'
+import { formatDate } from '@/utils/date-utils'
 const props = defineProps<{ challenge: any; role: any }>()
 const authStore = useAuthStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
@@ -21,6 +22,7 @@ const info = ref<ExerciseInfo | null>(null)
 const creator = ref<string>('')
 const name = ref<string>('')
 const dateCreated = ref<Date>()
+const dateCreatedString = ref<string>()
 async function fetchCardData() {
   const challengeDetailsResult = await _getChallengeDetails(props.challenge)
   if (Array.isArray(challengeDetailsResult)) {
@@ -54,6 +56,7 @@ async function fetchCardData() {
   const dateCreatedResult = await _getDateCreated(props.challenge)
   if (Array.isArray(dateCreatedResult) && dateCreatedResult[0]) {
     dateCreated.value = dateCreatedResult[0].dateCreated
+    dateCreatedString.value = formatDate(dateCreated.value)
   }
   console.log('details:', challengeDetailsResult)
   console.log('creator:', challengeCreatorResult)
@@ -66,7 +69,7 @@ onMounted(fetchCardData)
     <div class="card">
       <h3>{{ name }}</h3>
       <h4>{{ exercise }} ⋅ Level {{ level }}</h4>
-      <h4>created by {{ creator }} on {{ dateCreated }}</h4>
+      <h4>created by {{ creator }} on {{ dateCreatedString }}</h4>
     </div>
   </router-link>
 </template>
