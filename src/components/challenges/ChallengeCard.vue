@@ -69,7 +69,7 @@ onMounted(fetchCardData)
     <div class="card">
       <h3>{{ name }}</h3>
       <h4>{{ exercise }} ⋅ Level {{ level }}</h4>
-      <h4>created by {{ creator }} on {{ dateCreatedString }}</h4>
+      <h5>created by {{ creator }} on {{ dateCreatedString }}</h5>
     </div>
   </router-link>
 </template>
@@ -117,6 +117,11 @@ onMounted(fetchCardData)
 
 .card h4 {
   font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.card h5 {
+  font-size: 0.8rem;
   opacity: 0.7;
 }
 
