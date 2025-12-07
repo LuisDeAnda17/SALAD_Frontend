@@ -238,7 +238,7 @@ onMounted(fetchChallengeData)
         </p>
 
         <div class="confirm-actions">
-          <router-link :to="`/challenges`">
+          <router-link :to="`/`">
             <button class="confirm-delete-btn" @click="submitDeleteChallenge">
               Yes, Delete Challenge
             </button>
