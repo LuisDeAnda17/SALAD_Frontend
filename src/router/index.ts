@@ -43,7 +43,7 @@ const router = createRouter({
       component: GroupView,
     },
     {
-      path: '/friending',
+      path: '/network',
       name: 'friending',
       component: FriendingView,
     },
