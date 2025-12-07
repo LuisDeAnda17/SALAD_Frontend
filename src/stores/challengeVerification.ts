@@ -11,6 +11,7 @@ export const useChallengeVerificationStore = defineStore('challengeVerification'
     requester: string,
     approver: string,
     evidence: string,
+    dateCompleted: Date,
   ) {
     try {
       const response = await challengeVerificationApi.createVerificationRequest({
@@ -20,6 +21,7 @@ export const useChallengeVerificationStore = defineStore('challengeVerification'
         requester,
         approver,
         evidence,
+        dateCompleted,
       })
       return response.data
     } catch (error) {

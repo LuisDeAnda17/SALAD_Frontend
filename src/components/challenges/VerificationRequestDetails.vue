@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useChallengeProgressStore } from '@/stores/challengeProgress'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
 import { useAuthStore } from '@/stores/auth'
+import { formatDate } from '@/utils/date-utils'
 const props = defineProps<{ verificationRequest: string; role: string }>()
 // --- Stores ---
 const authStore = useAuthStore()
@@ -25,6 +26,11 @@ const evidence = ref<string>()
 const part = ref<string>()
 const day = ref<number>()
 const week = ref<number>()
+const dateCompleted = ref<Date>()
+
+const dateCompletedStr = computed(() => {
+  return dateCompleted.value ? formatDate(dateCompleted.value) : null
+})
 
 async function fetchData() {
   const requestDetails = await _getRequestDetails(props.verificationRequest)
@@ -52,6 +58,10 @@ async function fetchData() {
         week.value = dayWeekResult[0].week
       }
     }
+    const raw = requestDetails[0].dateCompleted
+    const d = new Date(raw) // now it's a real Date
+
+    dateCompleted.value = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
   }
 }
 
@@ -64,6 +74,10 @@ onMounted(fetchData)
     <div class="info-row">
       <p><strong>Week</strong> {{ week }}</p>
       <p><strong>Day</strong> {{ day }}</p>
+    </div>
+
+    <div class="info-row">
+      <p>Date Completed: {{ dateCompletedStr }}</p>
     </div>
 
     <div class="info-row">
