@@ -22,7 +22,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: ChallengeHomeView,
     },
     {
       path: '/login',
@@ -43,7 +43,7 @@ const router = createRouter({
       component: GroupView,
     },
     {
-      path: '/friending',
+      path: '/network',
       name: 'friending',
       component: FriendingView,
     },
@@ -51,11 +51,6 @@ const router = createRouter({
       path: '/friends',
       name: 'friends',
       component: FriendsView,
-    },
-    {
-      path: '/challenges',
-      name: 'challenges',
-      component: ChallengeHomeView,
     },
     { path: '/invitations', name: 'invitations', component: ChallengeInvitationsView },
     {

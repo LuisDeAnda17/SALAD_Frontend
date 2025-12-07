@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from './stores/auth'
 import { computed, ref } from 'vue'
 import ChatListPopup from './components/ChatListPopup.vue'
@@ -64,10 +65,9 @@ const closeChatPopup = () => {
 
           <template v-if="authStore.isAuthenticated">
             <router-link to="/group">Group</router-link>
-            <router-link to="/friending">Friending</router-link>
-            <router-link to="/invitations">Invitations</router-link>
+            <router-link to="/network">Network</router-link>
             <router-link to="/friends">Friends</router-link>
-            <router-link to="/challenges">Challenges</router-link>
+            <router-link to="/invitations">Invitations</router-link>
             <router-link to="/create">Create Challenge</router-link>
             <div class="user-menu">
               <span class="username">{{ currentUser }}</span>
@@ -149,12 +149,12 @@ nav {
 
 /* MAIN CONTENT AREA */
 .content {
-    width: 100%;
-    flex: 1;
-    padding-top: 24px;
-    background-color: black;
-    margin-top: 4rem;
-    z-index: 1000;
+  width: 100%;
+  flex: 1;
+  padding-top: 24px;
+  background-color: black;
+  margin-top: 4rem;
+  z-index: 1000;
 }
 
 /* ---- NAVBAR STYLING ---- */

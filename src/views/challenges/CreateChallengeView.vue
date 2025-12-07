@@ -120,7 +120,6 @@ async function resetForm() {
   <div v-if="user" class="content">
     <h3 v-if="submitted">Challenge Created!</h3>
     <h3 v-if="failed">Sorry, challenge creation failed!</h3>
-    <h1>Create Challenge</h1>
 
     <!-- CATEGORY SELECTION -->
     <div class="section">

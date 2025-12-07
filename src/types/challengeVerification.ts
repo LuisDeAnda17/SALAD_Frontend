@@ -5,6 +5,7 @@ export interface CreateVerificationRequest {
   requester: string
   approver: string
   evidence: string
+  dateCompleted: Date
 }
 
 export interface CreateVerificationResponse {
@@ -53,6 +54,7 @@ interface RequestDetails {
   approver: string
   requester: string
   approved: string
+  dateCompleted: string
 }
 
 export type GetRequestDetailsResponse = RequestDetails[]
