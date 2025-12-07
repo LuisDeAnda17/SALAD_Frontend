@@ -24,6 +24,7 @@ function selectUser(id: string) {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  align-items: center;
 
   max-height: 400px;
   overflow-y: auto;
@@ -33,7 +34,5 @@ function selectUser(id: string) {
   border-radius: 6px;
   padding: 0.5rem;
   background: #282828;
-
-  min-width: 120px;
 }
 </style>
