@@ -6,6 +6,7 @@ import { challengeDefinitionApi } from '@/services/api/challengeDefinitionApi'
 
 export const useChallengeDefinitionStore = defineStore('challengeDefinition', () => {
   async function createChallenge(
+    name: string,
     session: string,
     exercise: string,
     daysPerWeek: number,
@@ -15,6 +16,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
   ) {
     try {
       const response = await challengeDefinitionApi.createChallenge({
+        name,
         session,
         exercise,
         daysPerWeek,
@@ -93,6 +95,28 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
     }
   }
 
+  async function _getChallengeName(challenge: string) {
+    try {
+      const response = await challengeDefinitionApi._getChallengeName({ challenge })
+      console.log(`_getChallengeName backend result: ${response}`)
+      return response.data
+    } catch (error) {
+      console.error('_getChallengeName failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
+  async function _getDateCreated(challenge: string) {
+    try {
+      const response = await challengeDefinitionApi._getDateCreated({ challenge })
+      console.log(`_getDateCreated backend result: ${response}`)
+      return response.data
+    } catch (error) {
+      console.error('_getDateCreated failed:', error)
+      return { status: 'failed', error: error }
+    }
+  }
+
   async function _isOpen(challenge: string) {
     try {
       const response = await challengeDefinitionApi._isOpen({ challenge })
@@ -116,6 +140,8 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
     _getCreatedChallenges,
     _getChallengeDetails,
     _getCreator,
+    _getChallengeName,
+    _getDateCreated,
     _isOpen,
   }
 })

@@ -11,13 +11,15 @@ import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
+import { formatDate } from '@/utils/date-utils'
 
 const route = useRoute()
 const challenge = route.params.challenge as string // the UUID
 
 const authStore = useAuthStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
-const { _getChallengeDetails, _getCreator } = challengeDefinitionStore
+const { _getChallengeDetails, _getCreator, _getChallengeName, _getDateCreated } =
+  challengeDefinitionStore
 const { _getUsername } = authStore
 const { user } = storeToRefs(authStore)
 
@@ -28,6 +30,9 @@ const weeks = ref<number>(1)
 const info = ref<ExerciseInfo | null>(null)
 const creator = ref<string>('')
 const creatorUsername = ref<string>('')
+const name = ref<string>('')
+const dateCreated = ref<Date>()
+const dateCreatedString = ref<string>()
 
 const category = computed(() => {
   if (info.value) {
@@ -124,6 +129,17 @@ async function fetchChallengeData() {
       }
     }
   }
+
+  const challengeNameResult = await _getChallengeName(challenge)
+  if (Array.isArray(challengeNameResult) && challengeNameResult[0]) {
+    name.value = challengeNameResult[0].name
+  }
+
+  const dateCreatedResult = await _getDateCreated(challenge)
+  if (Array.isArray(dateCreatedResult) && dateCreatedResult[0]) {
+    dateCreated.value = dateCreatedResult[0].dateCreated
+    dateCreatedString.value = formatDate(dateCreated.value)
+  }
   console.log('details:', challengeDetailsResult)
 }
 
@@ -133,31 +149,31 @@ onMounted(fetchChallengeData)
 <template>
   <div class="challenge-wrapper">
     <div class="challenge-info">
-      <h2 class="challenge-title">{{ exercise }} ⋅ Level {{ level }}</h2>
-      <p class="creator">Created by: {{ creatorUsername }}</p>
+      <h2 class="challenge-title">{{ name }}</h2>
+      <p class="exercise-name">{{ exercise }} ⋅ Level {{ level }}</p>
+      <p class="creator">Created by {{ creatorUsername }} on {{ dateCreatedString }}</p>
       <div class="challenge-card">
-        <div class="challenge-general">
-          <p><strong>Days per Week:</strong> {{ daysPerWeek }}</p>
-          <p><strong>Weeks:</strong> {{ weeks }}</p>
+        <div class="challenge-detail">
+          <p>Frequency: {{ daysPerWeek }} days per week for {{ weeks }} weeks</p>
         </div>
 
         <!-- Anaerobic -->
-        <div v-if="category === 'anaerobic'" class="challenge-specific">
+        <div v-if="category === 'anaerobic'" class="challenge-detail">
           <p v-if="weight"><strong>Weight:</strong> {{ weight }} kg</p>
-          <p><strong>Reps:</strong> {{ reps }}</p>
-          <p><strong>Sets:</strong> {{ sets }}</p>
+          <p>Reps: {{ reps }}</p>
+          <p>Sets: {{ sets }}</p>
         </div>
 
         <!-- Rep Aerobic -->
-        <div v-else-if="subcategory === 'rep'" class="challenge-specific">
-          <p><strong>Speed:</strong> {{ repSpeed }} reps/min</p>
-          <p><strong>Duration:</strong> {{ minutes }} minutes</p>
+        <div v-else-if="subcategory === 'rep'" class="challenge-detail">
+          <p>Speed: {{ repSpeed }} reps/min</p>
+          <p>Duration:{{ minutes }} minutes</p>
         </div>
 
         <!-- Distance Aerobic -->
-        <div v-else-if="subcategory === 'distance'" class="challenge-specific">
-          <p><strong>Speed:</strong> {{ distanceSpeed }} km/hr</p>
-          <p><strong>Duration:</strong> {{ minutes }} minutes</p>
+        <div v-else-if="subcategory === 'distance'" class="challenge-detail">
+          <p>Speed: {{ distanceSpeed }} km/hr</p>
+          <p>Duration: {{ minutes }} minutes</p>
         </div>
       </div>
     </div>
@@ -174,34 +190,58 @@ onMounted(fetchChallengeData)
   justify-content: space-evenly;
 }
 
+.challenge-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  gap: 0.8rem;
+  border-style: solid;
+  border-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  align-self: flex-start;
+}
+
 .challenge-title {
   font-size: 2rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.exercise-name {
+  font-size: 1.2rem;
+  color: #ccc;
+  text-align: center;
 }
 
 .creator {
   font-size: 1rem;
   color: #ccc;
-  margin-bottom: 1rem;
+  text-align: center;
+  width: 70%;
 }
 
 .challenge-card {
   background-color: #111;
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
   cursor: pointer;
+  align-items: center;
 }
 
-.challenge-general p,
-.challenge-specific p {
-  margin: 0.3rem 0;
+.challenge-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.challenge-detail p {
   font-size: 1rem;
+  width: 100%;
 }
 </style>

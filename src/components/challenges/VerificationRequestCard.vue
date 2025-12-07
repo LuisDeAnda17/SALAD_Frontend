@@ -13,7 +13,7 @@ const { _getUsername } = authStore
 const challengeVerificationStore = useChallengeVerificationStore()
 const { _getRequestDetails } = challengeVerificationStore
 const challengeDefinitionStore = useChallengeDefinitionStore()
-const { _getChallengeDetails } = challengeDefinitionStore
+const { _getChallengeDetails, _getChallengeName } = challengeDefinitionStore
 const challengeProgressStore = useChallengeProgressStore()
 const { _getPartDayWeek } = challengeProgressStore
 
@@ -25,6 +25,7 @@ const week = ref<number>(1)
 const part = ref<string>('')
 const requester = ref<string>('')
 const requesterUsername = ref<string>('')
+const name = ref<string>()
 
 async function fetchData() {
   const requestDetails = await _getRequestDetails(props.verificationRequest)
@@ -53,6 +54,10 @@ async function fetchData() {
     exercise.value = challengeDetails[0].exercise
     level.value = challengeDetails[0].level
   }
+  const challengeNameResult = await _getChallengeName(challenge.value)
+  if (Array.isArray(challengeNameResult) && challengeNameResult[0]) {
+    name.value = challengeNameResult[0].name
+  }
 }
 
 onMounted(fetchData)
@@ -66,7 +71,8 @@ onMounted(fetchData)
     }"
   >
     <div class="card">
-      <h3>{{ exercise }} ⋅ Level {{ level }}</h3>
+      <h3>{{ name }}</h3>
+      <h4>{{ exercise }} ⋅ Level {{ level }}</h4>
       <h4>Week {{ week }} Day {{ day }}</h4>
       <h4 v-if="role === 'approver'">requested by {{ requesterUsername }}</h4>
     </div>

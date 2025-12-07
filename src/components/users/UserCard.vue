@@ -33,8 +33,8 @@ onMounted(fetchCardData)
   background-color: rgb(62, 99, 62, 0.2);
   border-width: 2px;
   border-style: solid;
-  padding: 4px;
-  max-width: 100px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
   display: flex;
   flex-direction: row;
   justify-content: center;
