@@ -44,7 +44,7 @@ async function submitRejectRequest() {
     ></VerificationRequestDetails>
     <!-- RESPONSE SECTION -->
     <div class="approve-section">
-      <router-link :to="`/challenges`">
+      <router-link :to="`/`">
         <button class="approve-btn" @click="submitApproveRequest">Approve</button>
       </router-link>
     </div>
@@ -62,7 +62,7 @@ async function submitRejectRequest() {
         </p>
 
         <div class="confirm-actions">
-          <router-link :to="`/challenges`">
+          <router-link :to="`/`">
             <button class="confirm-reject-btn" @click="submitRejectRequest">Yes, Reject</button>
           </router-link>
 

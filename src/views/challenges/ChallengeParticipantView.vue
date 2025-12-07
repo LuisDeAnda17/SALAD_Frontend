@@ -182,7 +182,7 @@ function onCellClick(day: number, week: number) {
     <p v-if="lockedMessage" class="locked-tip">{{ lockedMessage }}</p>
 
     <div class="leave-challenge-controls">
-      <router-link :to="`/challenges`">
+      <router-link :to="`/`">
         <button class="leave-challenge-btn" @click="submitLeaveChallenge">Leave Challenge</button>
       </router-link>
     </div>
