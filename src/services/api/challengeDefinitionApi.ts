@@ -21,6 +21,10 @@ import type {
   GetPartPointsResponse,
   GetCreatedChallengesRequest,
   GetCreatedChallengesResponse,
+  GetChallengeNameRequest,
+  GetChallengeNameResponse,
+  GetDateCreatedRequest,
+  GetDateCreatedResponse,
 } from '@/types/challengeDefinition'
 
 export class ChallengeDefinitionApi {
@@ -60,6 +64,18 @@ export class ChallengeDefinitionApi {
 
   async _getCreator(request: GetCreatorRequest): Promise<AxiosResponse<GetCreatorResponse>> {
     return http.post('/ChallengeDefinition/_getCreator', request)
+  }
+
+  async _getChallengeName(
+    request: GetChallengeNameRequest,
+  ): Promise<AxiosResponse<GetChallengeNameResponse>> {
+    return http.post('/ChallengeDefinition/_getChallengeName', request)
+  }
+
+  async _getDateCreated(
+    request: GetDateCreatedRequest,
+  ): Promise<AxiosResponse<GetDateCreatedResponse>> {
+    return http.post('/ChallengeDefinition/_getDateCreated', request)
   }
 
   async _getPartPoints(

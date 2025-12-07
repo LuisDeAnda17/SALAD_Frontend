@@ -21,6 +21,7 @@ export type ExerciseInfo = AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
 
 export interface CreateChallengeRequest {
   session: string
+  name: string
   exercise: string
   daysPerWeek: number
   weeks: number
@@ -93,6 +94,26 @@ interface Creator {
 }
 
 export type GetCreatorResponse = Creator[]
+
+export interface GetChallengeNameRequest {
+  challenge: string
+}
+
+interface Name {
+  name: string
+}
+
+export type GetChallengeNameResponse = Name[]
+
+export interface GetDateCreatedRequest {
+  challenge: string
+}
+
+interface DateCreated {
+  dateCreated: Date
+}
+
+export type GetDateCreatedResponse = DateCreated[]
 
 export interface GetPartPointsRequest {
   challenge: string

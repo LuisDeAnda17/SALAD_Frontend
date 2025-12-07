@@ -17,7 +17,8 @@ const challenge = route.params.challenge as string // the UUID
 
 const authStore = useAuthStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
-const { _getChallengeDetails, _getCreator } = challengeDefinitionStore
+const { _getChallengeDetails, _getCreator, _getChallengeName, _getDateCreated } =
+  challengeDefinitionStore
 const { _getUsername } = authStore
 const { user } = storeToRefs(authStore)
 
@@ -28,6 +29,8 @@ const weeks = ref<number>(1)
 const info = ref<ExerciseInfo | null>(null)
 const creator = ref<string>('')
 const creatorUsername = ref<string>('')
+const name = ref<string>('')
+const dateCreated = ref<Date>()
 
 const category = computed(() => {
   if (info.value) {
@@ -124,6 +127,16 @@ async function fetchChallengeData() {
       }
     }
   }
+
+  const challengeNameResult = await _getChallengeName(challenge)
+  if (Array.isArray(challengeNameResult) && challengeNameResult[0]) {
+    name.value = challengeNameResult[0].name
+  }
+
+  const dateCreatedResult = await _getDateCreated(challenge)
+  if (Array.isArray(dateCreatedResult) && dateCreatedResult[0]) {
+    dateCreated.value = dateCreatedResult[0].dateCreated
+  }
   console.log('details:', challengeDetailsResult)
 }
 
@@ -133,8 +146,9 @@ onMounted(fetchChallengeData)
 <template>
   <div class="challenge-wrapper">
     <div class="challenge-info">
-      <h2 class="challenge-title">{{ exercise }} ⋅ Level {{ level }}</h2>
-      <p class="creator">Created by: {{ creatorUsername }}</p>
+      <h2 class="challenge-title">{{ name }}</h2>
+      <p class="creator">{{ exercise }} ⋅ Level {{ level }}</p>
+      <p class="creator">Created by {{ creatorUsername }} on {{ dateCreated }}</p>
       <div class="challenge-card">
         <div class="challenge-general">
           <p><strong>Days per Week:</strong> {{ daysPerWeek }}</p>

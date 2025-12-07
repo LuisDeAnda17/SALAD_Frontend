@@ -9,7 +9,8 @@ import { useRouter } from 'vue-router'
 const props = defineProps<{ challenge: any; role: any }>()
 const authStore = useAuthStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
-const { _getChallengeDetails, _getCreator } = challengeDefinitionStore
+const { _getChallengeDetails, _getCreator, _getDateCreated, _getChallengeName } =
+  challengeDefinitionStore
 const { _getUsername } = authStore
 
 const exercise = ref<string>('')
@@ -18,6 +19,8 @@ const daysPerWeek = ref<number>(1)
 const weeks = ref<number>(1)
 const info = ref<ExerciseInfo | null>(null)
 const creator = ref<string>('')
+const name = ref<string>('')
+const dateCreated = ref<Date>()
 async function fetchCardData() {
   const challengeDetailsResult = await _getChallengeDetails(props.challenge)
   if (Array.isArray(challengeDetailsResult)) {
@@ -43,6 +46,15 @@ async function fetchCardData() {
       }
     }
   }
+  const challengeNameResult = await _getChallengeName(props.challenge)
+  if (Array.isArray(challengeNameResult) && challengeNameResult[0]) {
+    name.value = challengeNameResult[0].name
+  }
+
+  const dateCreatedResult = await _getDateCreated(props.challenge)
+  if (Array.isArray(dateCreatedResult) && dateCreatedResult[0]) {
+    dateCreated.value = dateCreatedResult[0].dateCreated
+  }
   console.log('details:', challengeDetailsResult)
   console.log('creator:', challengeCreatorResult)
 }
@@ -52,8 +64,9 @@ onMounted(fetchCardData)
 <template>
   <router-link :to="`/challenge/${challenge}/${role}`">
     <div class="card">
-      <h3>{{ exercise }} ⋅ Level {{ level }}</h3>
-      <h4>by {{ creator }}</h4>
+      <h3>{{ name }}</h3>
+      <h4>{{ exercise }} ⋅ Level {{ level }}</h4>
+      <h4>created by {{ creator }} on {{ dateCreated }}</h4>
     </div>
   </router-link>
 </template>

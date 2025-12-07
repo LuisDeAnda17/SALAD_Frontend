@@ -18,6 +18,7 @@ const challengeDefinitionStore = useChallengeDefinitionStore()
 
 const { createChallenge } = challengeDefinitionStore
 
+const name = ref<string>('')
 const exercise = ref<string>('')
 const level = ref<number>(1)
 const weeks = ref<number>(1)
@@ -81,6 +82,7 @@ const exerciseInfo = computed(() => {
 async function submitChallenge() {
   if (category.value && sessionId.value && exerciseInfo.value) {
     const result = await createChallenge(
+      name.value,
       sessionId.value,
       exercise.value,
       daysPerWeek.value,
@@ -98,6 +100,7 @@ async function submitChallenge() {
 }
 
 async function resetForm() {
+  name.value = ''
   category.value = null
   subcategory.value = null
   exercise.value = ''
@@ -169,6 +172,8 @@ async function resetForm() {
     <!-- FORM -->
     <div class="form" v-if="category && (category === 'anaerobic' || subcategory)">
       <h2>Challenge Details</h2>
+      <label>Challenge Name</label>
+      <input v-model="name" placeholder="e.g. October Workout, training for 5k"></input>
 
       <label>Exercise Name</label>
       <input
