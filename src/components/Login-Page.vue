@@ -81,10 +81,16 @@ const toggleForm = () => {
 
 const handleLogin = async () => {
   try {
-    await authStore.login(
+    const loginSuccessful = await authStore.login(
         loginForm.value.username,
         loginForm.value.password,
     );
+
+    if (!loginSuccessful) {
+      errorMessage.value = "Login failed. Please check your credentials.";
+      return;
+    }
+    // Navigate to home
     router.push("/");
   } catch {
     errorMessage.value = "Login failed. Please check your credentials.";

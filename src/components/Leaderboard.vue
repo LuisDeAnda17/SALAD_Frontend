@@ -42,7 +42,12 @@ defineProps({
   width: 300px;
   border-radius: 12px;
   padding: 16px;
-  background: #f5f5f5;
+  background: #1c1c1c;
+  color: #eee;
+}
+
+.leaderboard-item:not(:last-child) {
+  border-bottom: 1px solid #333;
 }
 
 .title {
@@ -59,8 +64,9 @@ defineProps({
 .leaderboard-item {
   display: flex;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: white;
+  padding: 8px 12px; 
+  background: #2a2a2a;
+  color: #eee;
   margin-bottom: 8px;
   border-radius: 6px;
 }

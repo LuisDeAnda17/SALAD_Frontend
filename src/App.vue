@@ -66,6 +66,7 @@ const closeChatPopup = () => {
           <template v-if="authStore.isAuthenticated">
             <router-link to="/group">Group</router-link>
             <router-link to="/network">Network</router-link>
+            <router-link to="/leaderboard">Leaderboard</router-link>
             <router-link to="/friends">Friends</router-link>
             <router-link to="/invitations">Invitations</router-link>
             <router-link to="/create">Create Challenge</router-link>

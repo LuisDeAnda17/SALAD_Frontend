@@ -31,6 +31,9 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(username: string, password: string) {
     try {
       const response = await authApi.login({ username, password })
+      if ('error' in response.data) {
+        return false
+      }
       user.value = { _id: response.data.user, username }
       sessionId.value = response.data.session
       //Eventually add session handling here
@@ -73,6 +76,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function getAllUsers() {
+    try {
+      const response = await authApi.getAllUsers()
+      console.log(`getAllUsers backend result: ${response.data}`)
+      return response.data
+    } catch (error) {
+      console.error('getAllUsers failed: ', error)
+      return false;
+    }
+  }
+
   return {
     //State
     user,
@@ -87,5 +101,6 @@ export const useAuthStore = defineStore('auth', () => {
     //Queries
     _getUsername,
     _getUser,
+    getAllUsers,
   }
 })
