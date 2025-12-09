@@ -6,6 +6,7 @@ import type {
   RepAerobicInfo,
   AnaerobicInfo,
   DistanceAerobicInfo,
+  Level,
 } from '@/types/challengeDefinition'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
@@ -24,7 +25,7 @@ const { _getUsername } = authStore
 const { user } = storeToRefs(authStore)
 
 const exercise = ref<string>('')
-const level = ref<number>(1)
+const level = ref<Level>('Easy')
 const daysPerWeek = ref<number>(1)
 const weeks = ref<number>(1)
 const info = ref<ExerciseInfo | null>(null)

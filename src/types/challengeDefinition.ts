@@ -17,6 +17,8 @@ export type DistanceAerobicInfo = {
   minutes: number
 }
 
+export type Level = 'Easy' | 'Moderate' | 'Intense'
+
 export type ExerciseInfo = AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
 
 export interface CreateChallengeRequest {
@@ -25,7 +27,7 @@ export interface CreateChallengeRequest {
   exercise: string
   daysPerWeek: number
   weeks: number
-  level: number
+  level: Level
   info: ExerciseInfo
 }
 
@@ -77,7 +79,7 @@ export interface GetChallengeDetailsRequest {
 
 interface ChallengeDetails {
   exercise: string
-  level: number
+  level: Level
   daysPerWeek: number
   weeks: number
   info: AnaerobicInfo | RepAerobicInfo | DistanceAerobicInfo
