@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User } from '../types/api'
-import type { ExerciseInfo } from '@/types/challengeDefinition'
+import type { ExerciseInfo, Level } from '@/types/challengeDefinition'
 import { challengeDefinitionApi } from '@/services/api/challengeDefinitionApi'
 
 export const useChallengeDefinitionStore = defineStore('challengeDefinition', () => {
@@ -11,7 +11,7 @@ export const useChallengeDefinitionStore = defineStore('challengeDefinition', ()
     exercise: string,
     daysPerWeek: number,
     weeks: number,
-    level: number,
+    level: Level,
     info: ExerciseInfo,
   ) {
     try {

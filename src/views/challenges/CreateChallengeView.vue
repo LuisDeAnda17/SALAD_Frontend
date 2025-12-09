@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 import type {
   RepAerobicInfo,
   AnaerobicInfo,
-  DistanceAerobicInfo,
+  DistanceAerobicInfo, Level
 } from '@/types/challengeDefinition'
 
 const authStore = useAuthStore()
@@ -20,7 +20,7 @@ const { createChallenge } = challengeDefinitionStore
 
 const name = ref<string>('')
 const exercise = ref<string>('')
-const level = ref<number>(1)
+const level = ref<Level>('Easy')
 const weeks = ref<number>(1)
 const daysPerWeek = ref<number>(1)
 const category = ref<'aerobic' | 'anaerobic' | null>(null)
@@ -80,6 +80,8 @@ const exerciseInfo = computed(() => {
 })
 
 async function submitChallenge() {
+  failed.value = false
+  submitted.value = false
   // ───────────────────────────────────────────
   // GLOBAL REQUIRED FIELDS
   // ───────────────────────────────────────────
@@ -139,7 +141,7 @@ async function resetForm() {
   category.value = null
   subcategory.value = null
   exercise.value = ''
-  level.value = 1
+  level.value = "Easy"
   weeks.value = 1
   daysPerWeek.value = 1
   reps.value = 1
@@ -229,8 +231,12 @@ async function resetForm() {
         required
       />
 
-      <label>Level (1-3)</label>
-      <input type="number" v-model="level" min="1" max="3" required/>
+     <label>Level</label>
+      <select v-model="level" required>
+        <option value="Easy">Easy</option>
+        <option value="Moderate">Moderate</option>
+        <option value="Intense">Intense</option>
+      </select>
 
       <label>Weeks</label>
       <input type="number" v-model="weeks" min="1" required/>
@@ -343,6 +349,13 @@ input {
   color: white;
 }
 
+select {
+  padding: 0.6rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+}
 .submit-btn {
   margin-top: 1rem;
   background: rgba(0, 200, 80, 0.3);
