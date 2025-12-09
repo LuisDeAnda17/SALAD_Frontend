@@ -15,7 +15,7 @@
                 <label for="password">Password:</label>
                 <input id="password"
                        v-model="loginForm.password" 
-                       type="text" 
+                       type="password" 
                        required />
             </div>
             <button type="submit">Login</button>
