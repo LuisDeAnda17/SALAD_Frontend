@@ -80,6 +80,41 @@ const exerciseInfo = computed(() => {
 })
 
 async function submitChallenge() {
+  // ───────────────────────────────────────────
+  // GLOBAL REQUIRED FIELDS
+  // ───────────────────────────────────────────
+  if (!name.value.trim()) return (failed.value = true)
+  if (!exercise.value.trim()) return (failed.value = true)
+  if (!category.value) return (failed.value = true)
+  if (!level.value) return (failed.value = true)
+  if (!weeks.value) return (failed.value = true)
+  if (!daysPerWeek.value) return (failed.value = true)
+
+  // ───────────────────────────────────────────
+  // AEROBIC REQUIRED
+  // ───────────────────────────────────────────
+  if (category.value === 'aerobic') {
+    if (!subcategory.value) return (failed.value = true)
+
+    if (subcategory.value === 'rep') {
+      if (!repSpeed.value) return (failed.value = true)
+      if (!minutes.value) return (failed.value = true)
+    }
+
+    if (subcategory.value === 'distance') {
+      if (!distanceSpeed.value) return (failed.value = true)
+      if (!minutes.value) return (failed.value = true)
+    }
+  }
+
+  // ───────────────────────────────────────────
+  // ANAEROBIC REQUIRED
+  // ───────────────────────────────────────────
+  if (category.value === 'anaerobic') {
+    // weight still optional
+    if (!reps.value) return (failed.value = true)
+    if (!sets.value) return (failed.value = true)
+  }
   if (category.value && sessionId.value && exerciseInfo.value) {
     const result = await createChallenge(
       name.value,
@@ -172,62 +207,65 @@ async function resetForm() {
     <div class="form" v-if="category && (category === 'anaerobic' || subcategory)">
       <h2>Challenge Details</h2>
       <label>Challenge Name</label>
-      <input v-model="name" placeholder="e.g. October Workout, training for 5k"></input>
+      <input v-model="name" placeholder="e.g. October Workout, training for 5k" required></input>
 
       <label>Exercise Name</label>
       <input
         v-if="category === 'anaerobic'"
         v-model="exercise"
         placeholder="e.g. Squats, Pushups, Bicep Curls"
+        required
       />
       <input
         v-if="category === 'aerobic' && subcategory === 'distance'"
         v-model="exercise"
         placeholder="e.g. Running, Biking"
+        required
       />
       <input
         v-if="category === 'aerobic' && subcategory === 'rep'"
         v-model="exercise"
         placeholder="e.g. Burpees"
+        required
       />
 
       <label>Level (1-3)</label>
-      <input type="number" v-model="level" min="1" max="3" />
+      <input type="number" v-model="level" min="1" max="3" required/>
 
       <label>Weeks</label>
-      <input type="number" v-model="weeks" min="1" />
+      <input type="number" v-model="weeks" min="1" required/>
 
       <label>Days Per Week</label>
-      <input type="number" v-model="daysPerWeek" min="1" max="7" />
+      <input type="number" v-model="daysPerWeek" min="1" max="7" required/>
 
       <!-- ANAEROBIC FIELDS -->
       <template v-if="category === 'anaerobic'">
         <label>Weight (kg) (Optional)</label>
-        <input type="number" v-model="weight" min="0" />
+        <input type="number" v-model="weight" min="0" required />
 
         <label>Reps</label>
-        <input type="number" v-model="reps" min="1" />
+        <input type="number" v-model="reps" min="1" required/>
 
         <label>Sets</label>
-        <input type="number" v-model="sets" min="1" />
+        <input type="number" v-model="sets" min="1" required/>
       </template>
 
       <!-- REP AEROBIC -->
       <template v-if="category === 'aerobic' && subcategory === 'rep'">
         <label>Reps Per Minute</label>
-        <input type="number" v-model="repSpeed" min="1" />
+        <input type="number" v-model="repSpeed" min="1" required/>
 
         <label>Minutes</label>
-        <input type="number" v-model="minutes" min="1" />
+        <input type="number" v-model="minutes" min="1" required/>
       </template>
 
       <!-- DISTANCE AEROBIC -->
       <template v-if="category === 'aerobic' && subcategory === 'distance'">
         <label>Speed (km/hr)</label>
-        <input type="number" v-model="distanceSpeed" min="1" />
+        <input type="number" v-model="distanceSpeed" min="1" required/>
 
         <label>Minutes</label>
-        <input type="number" v-model="minutes" min="1" />
+        <input type="number" v-model="minutes" min="1" required/>
       </template>
 
       <button class="submit-btn" @click="submitChallenge">Create Challenge</button>
