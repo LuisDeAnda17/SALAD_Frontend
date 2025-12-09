@@ -4,6 +4,8 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeParticipationStore } from '@/stores/challengeParticipation'
+import { useChallengeVerificationStore } from '@/stores/challengeVerification'
+import VerificationRequestList from '@/components/challenges/VerificationRequestList.vue'
 import { useRouter } from 'vue-router'
 import ChallengeList from '@/components/challenges/ChallengeList.vue'
 
@@ -13,19 +15,36 @@ const { user, userId, sessionId } = storeToRefs(authStore)
 
 const challengeParticipationStore = useChallengeParticipationStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
+const challengeVerificationStore = useChallengeVerificationStore()
 
 const { _getUserParticipations, _getUserInvitations } = challengeParticipationStore
 const { _getCreatedChallenges } = challengeDefinitionStore
+const { _getApproverActiveRequests } = challengeVerificationStore
 
-const invitations = ref<Array<{ invitation: string; challenge: string }>>([])
+const participations = ref<Array<{ participation: string; challenge: string }>>([])
+
+const createdChallenges = ref<Array<{ challenge: string }>>([])
+
+const verificationRequests = ref<Array<{ verificationRequest: string }>>([])
 
 const fetchPageData = async () => {
   try {
     if (userId.value) {
-      const invitationData = await _getUserInvitations(userId.value)
+      const participationData = await _getUserParticipations(userId.value)
 
-      if (Array.isArray(invitationData)) {
-        invitations.value = invitationData
+      const createdChallengeData = await _getCreatedChallenges(userId.value)
+      if (Array.isArray(participationData)) {
+        participations.value = participationData
+      }
+
+      if (Array.isArray(createdChallengeData)) {
+        createdChallenges.value = createdChallengeData
+      }
+
+      const verificationRequestResult = await _getApproverActiveRequests(userId.value)
+
+      if (Array.isArray(verificationRequestResult)) {
+        verificationRequests.value = verificationRequestResult
       }
     }
   } catch (error) {
@@ -38,12 +57,12 @@ onMounted(fetchPageData)
 </script>
 
 <template>
-  <div v-if="user" id="challenge-invitations-wrapper">
-    <div class="invitations-column">
-      <h2>Invitations</h2>
-      <ChallengeList :challenges="invitations" :role="'invitee'" />
-      <h4 v-if="invitations.length === 0" class="empty-msg">
-        You have not been invited to any challenges yet.
+  <div v-if="user" id="challenge-home-wrapper">
+    <div class="home-column">
+      <h2>Your Challenges</h2>
+      <ChallengeList :challenges="participations" :role="'participant'" />
+      <h4 v-if="participations.length === 0" class="empty-msg">
+        You are currently not participating in any challenges.
       </h4>
     </div>
   </div>
@@ -57,7 +76,7 @@ h1 {
   top: -10px;
 }
 
-#challenge-invitations-wrapper {
+#challenge-home-wrapper {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -68,12 +87,12 @@ h1 {
 
 .empty-msg {
   color: rgb(188, 188, 188);
-  padding-top: 2rem;
+  padding-top: 1rem;
   max-width: 80%;
   text-align: center;
 }
 
-.invitations-column {
+.home-column {
   display: flex;
   flex-direction: column;
   justify-content: start;

@@ -1,16 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import GroupView from '../views/GroupView.vue'
 import FriendingView from '../views/FriendingView.vue'
-import ChallengeHomeView from '@/views/challenges/ChallengeHomeView.vue'
+import HomeView from '@/views/challenges/HomeView.vue'
 import ChallengeView from '@/views/challenges/ChallengeView.vue'
 import ChallengeCreatorView from '@/views/challenges/ChallengeCreatorView.vue'
 import ChallengeParticipantView from '@/views/challenges/ChallengeParticipantView.vue'
 import ChallengeInviteeView from '@/views/challenges/ChallengeInviteeView.vue'
 import CreateChallengeView from '@/views/challenges/CreateChallengeView.vue'
 import leaderboardView from '@/views/leaderboardView.vue'
-import ChallengeInvitationsView from '@/views/challenges/ChallengeInvitationsView.vue'
+import RequestsView from '@/views/challenges/RequestsView.vue'
+import ManageView from '@/views/challenges/ManageView.vue'
+import ProgressView from '@/views/challenges/ProgressView.vue'
 import FriendsView from '../views/FriendsView.vue'
 import VerificationApproverView from '@/views/challenges/VerificationApproverView.vue'
 import VerificationRequesterView from '@/views/challenges/VerificationRequesterView.vue'
@@ -22,7 +23,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: ChallengeHomeView,
+      component: HomeView,
     },
     {
       path: '/login',
@@ -52,7 +53,9 @@ const router = createRouter({
       name: 'friends',
       component: FriendsView,
     },
-    { path: '/invitations', name: 'invitations', component: ChallengeInvitationsView },
+    { path: '/requests', name: 'requests', component: RequestsView },
+    { path: '/progress', name: 'progress', component: ProgressView },
+    { path: '/manage', name: 'manage', component: ManageView },
     {
       path: '/challenge/:challenge',
       component: ChallengeView, // parent wrapper

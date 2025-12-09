@@ -59,27 +59,10 @@ onMounted(fetchPageData)
 <template>
   <div v-if="user" id="challenge-home-wrapper">
     <div class="home-column">
-      <h2>Your Challenges</h2>
-      <ChallengeList :challenges="participations" :role="'participant'" />
-      <h4 v-if="participations.length === 0" class="empty-msg">
-        You are currently not participating in any challenges.
-      </h4>
-    </div>
-    <div class="home-column">
       <h2>Challenges Created</h2>
       <ChallengeList :challenges="createdChallenges" :role="'creator'" />
       <h4 v-if="createdChallenges.length === 0" class="empty-msg">
         You have not created any challenges.
-      </h4>
-    </div>
-    <div class="home-column">
-      <h2>Verification Requests</h2>
-      <VerificationRequestList
-        :verificationRequests="verificationRequests"
-        :role="'approver'"
-      ></VerificationRequestList>
-      <h4 v-if="verificationRequests.length === 0" class="empty-msg">
-        No one has requested verification from you yet.
       </h4>
     </div>
   </div>
