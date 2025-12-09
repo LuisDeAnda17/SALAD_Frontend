@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { chatApi } from "@/services/api/chatApi";
 import { authApi } from "@/services/api/authApi";
 import type { GetDMsResponse } from "@/types/chat";
@@ -28,6 +28,8 @@ const loading = ref(false);
 const sending = ref(false);
 const error = ref<string | null>(null);
 const messagesContainer = ref<HTMLElement | null>(null);
+const pollingInterval = ref<number | null>(null);
+const lastMessageId = ref<string | null>(null);
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -37,10 +39,13 @@ const scrollToBottom = () => {
   });
 };
 
-const fetchMessages = async () => {
+const fetchMessages = async (isPolling = false) => {
   if (!props.chatId) return;
   
-  loading.value = true;
+  // Only show loading indicator on initial load, not during polling
+  if (!isPolling) {
+    loading.value = true;
+  }
   error.value = null;
   try {
     const response = await chatApi.getDMs({ chat: props.chatId });
@@ -75,31 +80,61 @@ const fetchMessages = async () => {
       );
       
       // Sort by time
-      messages.value = messagesWithUsernames.sort(
+      const sortedMessages = messagesWithUsernames.sort(
         (a, b) => a.time.getTime() - b.time.getTime()
       );
       
-      scrollToBottom();
+      // If polling, only update if there are new messages
+      if (isPolling && lastMessageId.value) {
+        const newMessages = sortedMessages.filter(
+          msg => !messages.value.some(existing => existing.id === msg.id)
+        );
+        
+        if (newMessages.length > 0) {
+          // Append new messages
+          messages.value = [...messages.value, ...newMessages].sort(
+            (a, b) => a.time.getTime() - b.time.getTime()
+          );
+          scrollToBottom();
+        }
+      } else {
+        // Initial load or no previous messages - replace all
+        messages.value = sortedMessages;
+        scrollToBottom();
+      }
+      
+      // Update last message ID for polling comparison
+      if (sortedMessages.length > 0) {
+        const lastMsg = sortedMessages[sortedMessages.length - 1];
+        if (lastMsg) {
+          lastMessageId.value = lastMsg.id;
+        }
+      }
     } else if (response.data && typeof response.data === 'object' && 'error' in response.data) {
       error.value = (response.data as { error: string }).error;
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "Failed to load messages";
+    if (!isPolling) {
+      error.value = err instanceof Error ? err.message : "Failed to load messages";
+    }
   } finally {
-    loading.value = false;
+    if (!isPolling) {
+      loading.value = false;
+    }
   }
 };
 
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !props.chatId || sending.value) return;
   
+  const messageText = newMessage.value.trim();
   sending.value = true;
   error.value = null;
   try {
     const response = await chatApi.sendChat({
       sender: props.currentUserId,
       receiver: props.otherUserId,
-      message: newMessage.value.trim(),
+      message: messageText,
     });
     
     if (response.data && "error" in response.data) {
@@ -108,6 +143,18 @@ const sendMessage = async () => {
       newMessage.value = "";
       // Refresh messages to show the new one
       await fetchMessages();
+      
+      // Notify other components (including other users' views) that a message was sent
+      // This allows real-time updates across tabs/devices
+      window.dispatchEvent(
+        new CustomEvent("message-sent", {
+          detail: {
+            chatId: props.chatId,
+            sender: props.currentUserId,
+            receiver: props.otherUserId,
+          },
+        })
+      );
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to send message";
@@ -124,20 +171,70 @@ const handleKeyPress = (e: KeyboardEvent) => {
 };
 
 const closePopup = () => {
+  stopPolling();
   emit("close");
+};
+
+const startPolling = () => {
+  // Clear any existing interval
+  stopPolling();
+  
+  // Poll for new messages every 2 seconds
+  pollingInterval.value = window.setInterval(() => {
+    if (props.chatId) {
+      fetchMessages(true); // true indicates this is a polling request
+    }
+  }, 2000);
+};
+
+const stopPolling = () => {
+  if (pollingInterval.value !== null) {
+    clearInterval(pollingInterval.value);
+    pollingInterval.value = null;
+  }
+};
+
+// Handle message-sent events to refresh immediately when a message is sent
+const handleMessageSent = (event: CustomEvent<{ chatId: string; sender: string; receiver: string }>) => {
+  const { chatId, sender, receiver } = event.detail;
+  
+  // Refresh if this message is for the current chat
+  // Check if current user is either sender or receiver
+  if (
+    props.chatId === chatId &&
+    (sender === props.currentUserId || receiver === props.currentUserId)
+  ) {
+    // Small delay to ensure backend has processed the message
+    setTimeout(() => {
+      fetchMessages(true);
+    }, 500);
+  }
 };
 
 onMounted(() => {
   if (props.chatId) {
     fetchMessages();
+    startPolling();
   }
+  
+  // Listen for message-sent events
+  window.addEventListener("message-sent", handleMessageSent as EventListener);
 });
 
-watch(() => props.chatId, (newChatId) => {
+onUnmounted(() => {
+  stopPolling();
+  window.removeEventListener("message-sent", handleMessageSent as EventListener);
+});
+
+watch(() => props.chatId, (newChatId, oldChatId) => {
   if (newChatId) {
+    lastMessageId.value = null; // Reset last message ID
     fetchMessages();
+    startPolling();
   } else {
+    stopPolling();
     messages.value = [];
+    lastMessageId.value = null;
   }
 });
 </script>

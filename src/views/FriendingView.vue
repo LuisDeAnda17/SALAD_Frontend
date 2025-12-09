@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, reactive } from "vue";
+import { onMounted, onUnmounted, ref, computed, reactive } from "vue";
 import ProfilePage from "@/components/Profile-Page.vue";
 import ChatPopup from "@/components/ChatPopup.vue";
 import type { User } from "@/types/api";
@@ -265,9 +265,20 @@ const startChat = async (userId: string) => {
       username: userProfile.username,
     };
     chatId.value = chatIdValue;
-    // Remember this chat for future \"Open Chat\" actions
+    // Remember this chat for future "Open Chat" actions
     if (chatIdValue) {
       existingChatIds[userId] = chatIdValue;
+      // Notify other components (including other users' views) that a chat was created
+      // This allows user 2's view to update when user 1 starts a chat with them
+      window.dispatchEvent(
+        new CustomEvent("chat-created", {
+          detail: {
+            chatId: chatIdValue,
+            requester: authStore.userId,
+            receiver: userId,
+          },
+        })
+      );
     }
     chatPopupOpen.value = true;
     fetchError.value = null;
@@ -283,7 +294,31 @@ const closeChatPopup = () => {
   chatId.value = null;
 };
 
-onMounted(fetchProfiles);
+// Handle chat creation events to update cache when another user starts a chat with current user
+const handleChatCreated = (event: CustomEvent<{ chatId: string; requester: string; receiver: string }>) => {
+  const { chatId, requester, receiver } = event.detail;
+  const currentUserId = authStore.userId;
+  
+  // If this chat was created with the current user (they are the receiver), update the cache
+  if (currentUserId && receiver === currentUserId && requester) {
+    existingChatIds[requester] = chatId;
+  }
+  // If the current user created this chat (they are the requester), update the cache
+  else if (currentUserId && requester === currentUserId && receiver) {
+    existingChatIds[receiver] = chatId;
+  }
+};
+
+onMounted(() => {
+  fetchProfiles();
+  // Listen for chat creation events
+  window.addEventListener("chat-created", handleChatCreated as EventListener);
+});
+
+onUnmounted(() => {
+  // Clean up event listener
+  window.removeEventListener("chat-created", handleChatCreated as EventListener);
+});
 </script>
 
 <template>

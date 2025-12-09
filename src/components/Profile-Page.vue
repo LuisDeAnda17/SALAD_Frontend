@@ -14,11 +14,13 @@ const props = defineProps<{
   requestState?: "idle" | "pending" | "sent";
   disabled?: boolean;
   hasExistingChat?: boolean;
+  showRemoveButton?: boolean;
 }>();
 
 const emit = defineEmits<{
   (event: "request-friend", userId: string): void;
   (event: "start-chat", userId: string): void;
+  (event: "remove-friend", userId: string): void;
 }>();
 
 const isSelf = computed(() => props.currentUserId === props.user?._id);
@@ -52,16 +54,23 @@ const handleStartChat = () => {
   if (!props.user || isSelf.value) return;
   emit("start-chat", props.user._id);
 };
+
+const handleRemoveFriend = () => {
+  if (!props.user || isSelf.value) return;
+  emit("remove-friend", props.user._id);
+};
 </script>
 
 <template>
   <article class="profile-card">
-    <div class="profile-card__avatar">
-      <span>{{ props.user?.username?.charAt(0)?.toUpperCase() }}</span>
+    <div class="profile-card__avatar-section">
+      <div class="profile-card__avatar">
+        <span>{{ props.user?.username?.charAt(0)?.toUpperCase() }}</span>
+      </div>
+      <h3 class="profile-card__username">{{ props.user.username }}</h3>
     </div>
     <div class="profile-card__body">
       <div class="profile-card__header">
-        <h3>{{ props.user.username }}</h3>
         <small v-if="props.user.mutualFriends !== undefined">
           {{ props.user.mutualFriends }} mutual
           {{ props.user.mutualFriends === 1 ? "friend" : "friends" }}
@@ -73,6 +82,15 @@ const handleStartChat = () => {
     </div>
     <div class="profile-card__actions">
       <button
+        v-if="showRemoveButton"
+        class="profile-card__remove"
+        type="button"
+        @click="handleRemoveFriend"
+      >
+        Remove friend
+      </button>
+      <button
+        v-else
         class="profile-card__request"
         type="button"
         :disabled="!canRequest"
@@ -97,12 +115,21 @@ const handleStartChat = () => {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 1rem;
-  align-items: center;
+  align-items: start;
   padding: 1.25rem;
   border: 1px solid #e0e0e0;
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  min-width: 0; /* Prevent grid overflow */
+}
+
+.profile-card__avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .profile-card__avatar {
@@ -116,6 +143,25 @@ const handleStartChat = () => {
   justify-content: center;
   font-weight: 600;
   font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.profile-card__username {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #000;
+  text-align: center;
+  word-break: break-word;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-card__body {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden; /* Prevent text overflow */
 }
 
 .profile-card__header {
@@ -123,12 +169,6 @@ const handleStartChat = () => {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.5rem;
-}
-
-.profile-card__header h3 {
-  margin: 0;
-  font-size: 1.125rem;
-  color: #000;
 }
 
 .profile-card__header small {
@@ -144,42 +184,66 @@ const handleStartChat = () => {
 .profile-card__actions {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  flex-shrink: 0; /* Prevent buttons from being compressed */
 }
 
 .profile-card__request {
-  border: none;
-  border-radius: 999px;
-  padding: 0.45rem 1.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: #2563eb;
+  padding: 0.5rem 1rem;
+  background: rgba(37, 99, 235, 0.6);
   color: white;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(37, 99, 235, 0.8);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.profile-card__request:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.75);
 }
 
 .profile-card__request:disabled {
-  background: #c7cde6;
+  background: rgba(199, 205, 230, 0.4);
+  border-color: rgba(199, 205, 230, 0.6);
   cursor: default;
   opacity: 0.7;
 }
 
 .profile-card__chat {
-  border: none;
-  border-radius: 999px;
-  padding: 0.45rem 1.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: #10b981;
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.6);
   color: white;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(16, 185, 129, 0.8);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .profile-card__chat:hover {
-  background: #059669;
-  transform: scale(1.02);
+  background: rgba(16, 185, 129, 0.75);
 }
 
-.profile-card__chat:active {
-  transform: scale(0.98);
+.profile-card__remove {
+  padding: 0.5rem 1rem;
+  background: rgba(239, 68, 68, 0.6);
+  color: white;
+  border: 1px solid rgba(239, 68, 68, 0.8);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.profile-card__remove:hover {
+  background: rgba(239, 68, 68, 0.75);
 }
 </style>

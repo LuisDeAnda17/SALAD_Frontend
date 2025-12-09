@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, computed, reactive } from "vue";
+import { onMounted, onUnmounted, ref, watch, computed, reactive } from "vue";
 import ProfilePage from "@/components/Profile-Page.vue";
 import ChatPopup from "@/components/ChatPopup.vue";
 import { useAuthStore } from "@/stores/auth";
@@ -290,6 +290,24 @@ const cancelSentRequest = async (request: SentRequestWithUsername) => {
   }
 };
 
+const removeFriend = async (userId: string) => {
+  if (!authStore.userId) return;
+  
+  if (!confirm("Are you sure you want to remove this friend?")) {
+    return;
+  }
+  
+  try {
+    await friendingApi.removeFriend({
+      user: authStore.userId,
+      requester: userId,
+    });
+    await refreshData();
+  } catch (error) {
+    handleError(error, "Unable to remove friend.");
+  }
+};
+
 const startChat = async (userId: string) => {
   if (!authStore.userId) {
     pageError.value = "You need to log in before starting a chat.";
@@ -360,6 +378,17 @@ const startChat = async (userId: string) => {
     // Remember this chat for future "Open Chat" actions
     if (chatIdValue) {
       existingChatIds[userId] = chatIdValue;
+      // Notify other components (including other users' views) that a chat was created
+      // This allows user 2's view to update when user 1 starts a chat with them
+      window.dispatchEvent(
+        new CustomEvent("chat-created", {
+          detail: {
+            chatId: chatIdValue,
+            requester: authStore.userId,
+            receiver: userId,
+          },
+        })
+      );
     }
     chatPopupOpen.value = true;
     pageError.value = null;
@@ -375,10 +404,32 @@ const closeChatPopup = () => {
   chatId.value = null;
 };
 
+// Handle chat creation events to update cache when another user starts a chat with current user
+const handleChatCreated = (event: CustomEvent<{ chatId: string; requester: string; receiver: string }>) => {
+  const { chatId, requester, receiver } = event.detail;
+  const currentUserId = authStore.userId;
+  
+  // If this chat was created with the current user (they are the receiver), update the cache
+  if (currentUserId && receiver === currentUserId && requester) {
+    existingChatIds[requester] = chatId;
+  }
+  // If the current user created this chat (they are the requester), update the cache
+  else if (currentUserId && requester === currentUserId && receiver) {
+    existingChatIds[receiver] = chatId;
+  }
+};
+
 onMounted(() => {
   if (authStore.userId) {
     refreshData();
   }
+  // Listen for chat creation events
+  window.addEventListener("chat-created", handleChatCreated as EventListener);
+});
+
+onUnmounted(() => {
+  // Clean up event listener
+  window.removeEventListener("chat-created", handleChatCreated as EventListener);
 });
 
 watch(
@@ -440,8 +491,9 @@ watch(
             :user="friend"
             :current-user-id="authStore.userId"
             :has-existing-chat="!!existingChatIds[friend._id]"
-            disabled
+            :show-remove-button="true"
             @start-chat="startChat"
+            @remove-friend="removeFriend"
           />
         </div>
       </section>
@@ -555,12 +607,20 @@ watch(
 }
 
 .friends__refresh {
-  border: 1px solid #cbd5f5;
-  background: white;
-  color: #1f2937;
-  border-radius: 999px;
-  padding: 0.5rem 1.25rem;
+  padding: 0.5rem 1rem;
+  background: rgba(37, 99, 235, 0.6);
+  color: white;
+  border: 1px solid rgba(37, 99, 235, 0.8);
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.friends__refresh:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.75);
 }
 
 .friends__columns {
@@ -640,6 +700,13 @@ watch(
   justify-content: space-between;
   gap: 1rem;
   align-items: center;
+  min-width: 0; /* Prevent flex overflow */
+}
+
+.request-card > div:first-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .request-card__name {
@@ -657,24 +724,39 @@ watch(
 .request-card__actions {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .request-card__btn {
-  border-radius: 999px;
-  padding: 0.35rem 1rem;
-  font-weight: 600;
-  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .request-card__btn--accept {
-  background: #10b981;
+  background: rgba(16, 185, 129, 0.6);
   color: white;
+  border-color: rgba(16, 185, 129, 0.8);
+}
+
+.request-card__btn--accept:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.75);
 }
 
 .request-card__btn--decline {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.6);
+  color: white;
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+.request-card__btn--decline:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.75);
 }
 
 .friends__refresh:disabled,
