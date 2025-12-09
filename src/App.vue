@@ -68,8 +68,6 @@ const closeChatPopup = () => {
             <router-link to="/network">Network</router-link>
             <router-link to="/leaderboard">Leaderboard</router-link>
             <router-link to="/friends">Friends</router-link>
-            <router-link to="/invitations">Invitations</router-link>
-            <router-link to="/create">Create Challenge</router-link>
             <div class="user-menu">
               <span class="username">{{ currentUser }}</span>
               <button @click="handleLogout" class="logout-btn">Logout</button>
