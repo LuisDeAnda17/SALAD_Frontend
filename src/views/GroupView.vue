@@ -2,6 +2,7 @@
   <div class="group-page">
 
     <h1>Groups</h1>
+    <p>Manage and Explore Groups</p>
 
     <!-- Tabs for different views -->
     <div class="tabs">
@@ -10,7 +11,7 @@
       <button :class="{ active: currentTab === 'publicGroups' }" @click="currentTab = 'publicGroups'; fetchPublicGroups();">Public Groups</button>
     </div>
 
-    <div v-if="currentTab === 'myGroups'">
+    <div v-if="currentTab === 'myGroups'" class="my-groups-section">
       <h2>Groups I Am A Member Of</h2>
       <ul>
         <li v-for="group in myGroups" :key="group.group">
@@ -42,7 +43,7 @@
       </div>
     </div>
 
-    <div v-if="currentTab === 'ledGroups'">
+    <div v-if="currentTab === 'ledGroups'" class="led-groups-section">
       <ul>
         <li v-for="group in ledGroups" :key="group.group">
           <strong>{{ group.name }}</strong>
@@ -109,7 +110,7 @@
       </ul>
     </div>
 
-    <div v-if="currentTab === 'publicGroups'">
+    <div v-if="currentTab === 'publicGroups'" class="public-groups-section">
       <h2>Public Groups</h2>
 
       <input 
@@ -492,10 +493,25 @@ onMounted(async () => {
   padding: 20px;
 }
 
+.group-page h1 {
+  padding-bottom: 3px;
+  font-weight: 200;
+}
+
+.group-page p {
+    margin: 0.35rem 0 0;
+    color: #4a5568;
+    margin-bottom: revert;
+}
+
 .tabs {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+}
+
+button:not(.tabs button) {
+  margin-left: 10px;
 }
 
 .tabs button {
@@ -518,10 +534,6 @@ ul {
 
 li {
   margin-bottom: 10px;
-}
-
-button {
-  margin-left: 10px;
 }
 
 .create-group-form {
@@ -604,5 +616,35 @@ button {
   text-align: center;
 }
 
+/* My Groups Page */
+.my-groups-section li {
+  margin: 10px;
+  margin-left: 0;
+	background-color: rgb(182, 191, 228, 0.3);
+	border-radius: 4px;
+	padding: 3px
+}
+
+.my-groups-section li ul li {
+  padding: 7px;
+}
+
+/* Led Groups Page */
+.led-groups-section li {
+  margin: 10px;
+  margin-left: 0px;
+  background-color: rgb(182, 191, 228, 0.3);
+  border-radius: 4px;
+  padding: 3px
+}
+
+/* Public Groups Page */
+.public-groups-section li {
+  margin: 10px;
+  margin-left: 0px;
+  background-color: rgb(182, 191, 228, 0.3);
+  border-radius: 4px;
+  padding: 3px
+}
 
 </style>
