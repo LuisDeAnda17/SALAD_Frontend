@@ -133,7 +133,7 @@ nav {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 2000;
 
   display: flex;
   justify-content: space-between;
@@ -154,7 +154,8 @@ nav {
   padding-top: 24px;
   background-color: black;
   margin-top: 4rem;
-  z-index: 1000;
+  position: relative;
+  z-index: 1;
 }
 
 /* ---- NAVBAR STYLING ---- */
