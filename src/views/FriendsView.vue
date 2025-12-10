@@ -608,9 +608,9 @@ watch(
 
 .friends__refresh {
   padding: 0.5rem 1rem;
-  background: rgba(37, 99, 235, 0.6);
+  background: rgba(37, 99, 235, 0.75);
   color: white;
-  border: 1px solid rgba(37, 99, 235, 0.8);
+  border: 1px solid rgba(37, 99, 235, 0.9);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -620,7 +620,7 @@ watch(
 }
 
 .friends__refresh:hover:not(:disabled) {
-  background: rgba(37, 99, 235, 0.75);
+  background: rgba(37, 99, 235, 0.85);
 }
 
 .friends__columns {
@@ -740,23 +740,23 @@ watch(
 }
 
 .request-card__btn--accept {
-  background: rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.75);
   color: white;
-  border-color: rgba(16, 185, 129, 0.8);
+  border-color: rgba(16, 185, 129, 0.9);
 }
 
 .request-card__btn--accept:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.75);
+  background: rgba(16, 185, 129, 0.85);
 }
 
 .request-card__btn--decline {
-  background: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.75);
   color: white;
-  border-color: rgba(239, 68, 68, 0.8);
+  border-color: rgba(239, 68, 68, 0.9);
 }
 
 .request-card__btn--decline:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.75);
+  background: rgba(239, 68, 68, 0.85);
 }
 
 .friends__refresh:disabled,

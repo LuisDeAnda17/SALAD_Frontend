@@ -405,7 +405,7 @@ onUnmounted(() => {
 
 .friending__subtitle {
   margin: 0.35rem 0 0;
-  color: #4a5568;
+  color: #ffffff;
 }
 
 .friending__search input {

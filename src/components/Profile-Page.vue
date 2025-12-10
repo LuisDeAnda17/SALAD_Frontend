@@ -191,9 +191,9 @@ const handleRemoveFriend = () => {
 
 .profile-card__request {
   padding: 0.5rem 1rem;
-  background: rgba(37, 99, 235, 0.6);
+  background: rgba(37, 99, 235, 0.75);
   color: white;
-  border: 1px solid rgba(37, 99, 235, 0.8);
+  border: 1px solid rgba(37, 99, 235, 0.9);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -203,21 +203,21 @@ const handleRemoveFriend = () => {
 }
 
 .profile-card__request:hover:not(:disabled) {
-  background: rgba(37, 99, 235, 0.75);
+  background: rgba(37, 99, 235, 0.85);
 }
 
 .profile-card__request:disabled {
-  background: rgba(199, 205, 230, 0.4);
-  border-color: rgba(199, 205, 230, 0.6);
+  background: rgba(199, 205, 230, 0.5);
+  border-color: rgba(199, 205, 230, 0.7);
   cursor: default;
   opacity: 0.7;
 }
 
 .profile-card__chat {
   padding: 0.5rem 1rem;
-  background: rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.75);
   color: white;
-  border: 1px solid rgba(16, 185, 129, 0.8);
+  border: 1px solid rgba(16, 185, 129, 0.9);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -227,14 +227,14 @@ const handleRemoveFriend = () => {
 }
 
 .profile-card__chat:hover {
-  background: rgba(16, 185, 129, 0.75);
+  background: rgba(16, 185, 129, 0.85);
 }
 
 .profile-card__remove {
   padding: 0.5rem 1rem;
-  background: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.75);
   color: white;
-  border: 1px solid rgba(239, 68, 68, 0.8);
+  border: 1px solid rgba(239, 68, 68, 0.9);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -244,6 +244,6 @@ const handleRemoveFriend = () => {
 }
 
 .profile-card__remove:hover {
-  background: rgba(239, 68, 68, 0.75);
+  background: rgba(239, 68, 68, 0.85);
 }
 </style>
