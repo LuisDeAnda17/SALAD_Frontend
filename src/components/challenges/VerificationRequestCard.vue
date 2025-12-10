@@ -72,7 +72,7 @@ onMounted(fetchData)
   >
     <div class="card">
       <h3>{{ name }}</h3>
-      <h4>{{ exercise }} ⋅ Level {{ level }}</h4>
+      <h4>{{ exercise }} ⋅ {{ level }}</h4>
       <h4>Week {{ week }} Day {{ day }}</h4>
       <h4 v-if="role === 'approver'">requested by {{ requesterUsername }}</h4>
     </div>
