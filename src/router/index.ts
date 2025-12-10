@@ -16,10 +16,16 @@ import FriendsView from '../views/FriendsView.vue'
 import VerificationApproverView from '@/views/challenges/VerificationApproverView.vue'
 import VerificationRequesterView from '@/views/challenges/VerificationRequesterView.vue'
 import CreateVerificationRequestView from '@/views/challenges/CreateVerificationRequestView.vue'
+import ProfileView from '@/views/ProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+    },
     {
       path: '/',
       name: 'home',
