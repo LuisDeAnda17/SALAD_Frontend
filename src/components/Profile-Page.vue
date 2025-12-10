@@ -116,11 +116,11 @@ const handleRemoveFriend = () => {
   grid-template-columns: auto 1fr auto;
   gap: 1rem;
   align-items: start;
-  padding: 1.25rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #2a2a2a;
+  margin-bottom: 8px;
   min-width: 0; /* Prevent grid overflow */
 }
 
@@ -136,21 +136,22 @@ const handleRemoveFriend = () => {
   height: 3.5rem;
   width: 3.5rem;
   border-radius: 50%;
-  background: #f6f6f6;
-  color: #333;
+  background: #1c1c1c;
+  color: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 1.25rem;
   flex-shrink: 0;
+  border: 1px solid #444;
 }
 
 .profile-card__username {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #000;
+  color: #eee;
   text-align: center;
   word-break: break-word;
   max-width: 100%;
@@ -172,12 +173,12 @@ const handleRemoveFriend = () => {
 }
 
 .profile-card__header small {
-  color: #000;
+  color: #aaa;
 }
 
 .profile-card__bio {
   margin: 0.35rem 0 0;
-  color: #000;
+  color: #ccc;
   line-height: 1.4;
 }
 

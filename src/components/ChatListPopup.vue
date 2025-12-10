@@ -229,7 +229,7 @@ onMounted(() => {
               :disabled="deletingChatId === chat.chatId"
               aria-label="Delete chat"
             >
-              {{ deletingChatId === chat.chatId ? "..." : "🗑️" }}
+              {{ deletingChatId === chat.chatId ? "Deleting..." : "Delete" }}
             </button>
           </div>
         </div>
@@ -254,15 +254,16 @@ onMounted(() => {
 }
 
 .chat-list-popup {
-  background: white;
-  border-radius: 16px;
+  background: #1c1c1c;
+  border-radius: 12px;
   width: 100%;
   max-width: 500px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  border: 1px solid #333;
 }
 
 .chat-list-popup__header {
@@ -270,14 +271,14 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #333;
 }
 
 .chat-list-popup__header h3 {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: #eee;
 }
 
 .chat-list-popup__close {
@@ -285,7 +286,7 @@ onMounted(() => {
   border: none;
   font-size: 2rem;
   line-height: 1;
-  color: #6b7280;
+  color: #aaa;
   cursor: pointer;
   padding: 0;
   width: 2rem;
@@ -298,15 +299,16 @@ onMounted(() => {
 }
 
 .chat-list-popup__close:hover {
-  background-color: #f3f4f6;
-  color: #111827;
+  background-color: #2a2a2a;
+  color: #eee;
 }
 
 .chat-list-popup__error {
   padding: 0.75rem 1.5rem;
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ff6b6b;
   font-size: 0.875rem;
+  border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
 .chat-list-popup__content {
@@ -314,12 +316,14 @@ onMounted(() => {
   overflow-y: auto;
   min-height: 200px;
   max-height: 500px;
+  background: #1c1c1c;
+  padding: 0.5rem;
 }
 
 .chat-list-popup__loading,
 .chat-list-popup__empty {
   text-align: center;
-  color: #6b7280;
+  color: #aaa;
   padding: 3rem 2rem;
   font-size: 0.875rem;
 }
@@ -333,29 +337,33 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 12px;
   cursor: pointer;
   transition: background-color 0.2s;
   position: relative;
+  background: #2a2a2a;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #333;
 }
 
 .chat-list-item:hover {
-  background-color: #f9fafb;
+  background-color: #333;
 }
 
 .chat-list-item__avatar {
   height: 3rem;
   width: 3rem;
   border-radius: 50%;
-  background: #6366f1;
-  color: white;
+  background: #1c1c1c;
+  color: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 1.125rem;
   flex-shrink: 0;
+  border: 1px solid #444;
 }
 
 .chat-list-item__content {
@@ -375,7 +383,7 @@ onMounted(() => {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: #eee;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -383,14 +391,14 @@ onMounted(() => {
 
 .chat-list-item__time {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #888;
   flex-shrink: 0;
 }
 
 .chat-list-item__preview {
   margin: 0;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #aaa;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -398,29 +406,30 @@ onMounted(() => {
 
 .chat-list-item__preview--empty {
   font-style: italic;
-  color: #9ca3af;
+  color: #888;
 }
 
 .chat-list-item__delete {
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(239, 68, 68, 0.75);
+  color: white;
+  border: 1px solid rgba(239, 68, 68, 0.9);
   border-radius: 4px;
-  transition: background-color 0.2s;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
   flex-shrink: 0;
-  opacity: 0.6;
 }
 
-.chat-list-item__delete:hover {
-  background-color: #fee2e2;
-  opacity: 1;
+.chat-list-item__delete:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.85);
 }
 
 .chat-list-item__delete:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  opacity: 0.4;
 }
 </style>
 

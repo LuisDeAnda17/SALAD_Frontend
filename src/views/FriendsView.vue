@@ -577,9 +577,9 @@ watch(
 
 <style scoped>
 .friends {
-  max-width: 1100px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem 1rem 3rem;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -603,7 +603,12 @@ watch(
 
 .friends__subtitle {
   margin: 0.35rem 0 0;
-  color: #ffffff;
+  color: #eee;
+}
+
+h1 {
+  color: #eee;
+  margin: 0.5rem 0;
 }
 
 .friends__refresh {
@@ -630,10 +635,10 @@ watch(
 }
 
 .friends__panel {
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  padding: 1.5rem;
-  background: #fff;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 16px;
+  background: #1c1c1c;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -647,11 +652,12 @@ watch(
 }
 
 .friends__panel header h2 {
-  color: #000;
+  color: #eee;
+  margin: 0;
 }
 
 .friends__panel header small {
-  color: #000;
+  color: #aaa;
 }
 
 .friends__list {
@@ -678,29 +684,34 @@ watch(
 }
 
 .friends__state {
-  border: 1px dashed #d6d8e7;
-  color: #000;
+  border: 1px dashed #444;
+  color: #aaa;
+  background: #2a2a2a;
 }
 
 .friends__empty {
-  border: 1px dashed #fcd34d;
-  color: #92400e;
+  border: 1px dashed #555;
+  color: #aaa;
+  background: #2a2a2a;
 }
 
 .friends__error {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
 .request-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 1rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 12px;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   align-items: center;
   min-width: 0; /* Prevent flex overflow */
+  background: #2a2a2a;
+  margin-bottom: 8px;
 }
 
 .request-card > div:first-child {
@@ -712,12 +723,12 @@ watch(
 .request-card__name {
   font-weight: 600;
   margin: 0 0 0.25rem;
-  color: #000;
+  color: #eee;
 }
 
 .request-card__time {
   margin: 0;
-  color: #000;
+  color: #aaa;
   font-size: 0.875rem;
 }
 
