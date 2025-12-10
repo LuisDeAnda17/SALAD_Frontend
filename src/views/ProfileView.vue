@@ -10,58 +10,202 @@
 
     <!-- Body -->
     <div class="profile-body">
+      
+      <!-- Bio -->
       <div class="profile-section">
         <h2>About Me</h2>
-        <p>{{ profile.bio || 'No bio provided yet.' }}</p>
+        <p v-if="!isEditing">{{ profile.bio || 'No bio provided yet.' }}</p>
+        <textarea v-else v-model="editForm.bio" class="edit-input"></textarea>
       </div>
 
+      <!-- Location -->
       <div class="profile-section">
         <h2>Location</h2>
-        <p>{{ profile.location || 'Unknown' }}</p>
+        <p v-if="!isEditing">{{ profile.location || 'Unknown' }}</p>
+        <input v-else v-model="editForm.location" class="edit-input" />
       </div>
 
+      <!-- Skill Level -->
+      <div class="profile-section">
+        <h2>Skill Level</h2>
+        <p v-if="!isEditing">{{ profile.skillLevel }}</p>
+        <select v-else v-model="editForm.skillLevel" class="edit-input">
+          <option value="">Select...</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+      </div>
+
+      <!-- Image -->
+      <div class="profile-section">
+        <h2>Profile Image URL</h2>
+        <img v-if="!isEditing" :src="profile.userImg" class="profile-image" />
+        <input v-else v-model="editForm.userImg" class="edit-input" />
+      </div>
+
+      <!-- Date Joined -->
       <div class="profile-section">
         <h2>Date Joined</h2>
         <p>{{ dateJoinedFormatted }}</p>
       </div>
+
     </div>
 
-    <!-- Edit Button (just UI for now) -->
-    <button class="edit-btn">
-      Edit Profile
-    </button>
+    <!-- Buttons -->
+    <div class="actions">
+      <button v-if="!isEditing" class="edit-btn" @click="startEditing">
+        Edit Profile
+      </button>
+
+      <div v-else>
+        <button class="save-btn" @click="saveProfile">Save</button>
+        <button class="cancel-btn" @click="cancelEditing">Cancel</button>
+      </div>
+    </div>
 
   </div>
 </template>
 
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { profileApi } from "@/services/api/profileApi";
 
-// -----------------------------
-// Dummy Data (Replace via API)
-// -----------------------------
+import type { ProfileResponse, UpdateProfileRequest } from "@/types/profile";
+import type { GetUsernameResponse } from "@/types/api";
+
+const authStore = useAuthStore();
+const userId = computed(() => authStore.user?._id);
+const session = computed(() => authStore.sessionId);
+const username = ref("");
+
+type Profile = {
+  location: string;
+  bio: string;
+  skillLevel: string;
+  userImg: string;
+};
+
 const profile = ref({
-  location: "Cambridge, MA",
-  bio: "I love puzzles, coding, and boba.",
-  skillLevel: "Intermediate",
-  dateJoined: new Date("2024-10-05"),
-  userImg: "https://via.placeholder.com/120"
+  location: "My location",
+  bio: "This is my bio!",
+  skillLevel: "Beginner",
+  dateJoined: new Date(),
+  userImg: ""
 });
 
-// -------------------------------------
-// Derived values (API-ready formatting)
-// -------------------------------------
-const profileDisplayName = "John Doe (TEMP NAME)"; // Replace with API user name
+// Editing state
+const isEditing = ref(false);
 
-const dateJoinedFormatted = computed(() => {
-  const d = new Date(profile.value.dateJoined);
-  return d.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+// Editing form
+const editForm = ref<Profile>({
+  location: "",
+  bio: "",
+  skillLevel: "",
+  userImg: ""
 });
+
+// -----------------------------
+// LOAD PROFILE
+// -----------------------------
+const loadProfile = async () => {
+  if (!userId.value || !session.value) return;
+
+  try {
+    const response: ProfileResponse = (await profileApi.getProfile(
+      {user: userId.value},
+    )).data;
+    if (Array.isArray(response) && response[0] && response[0].profile) {
+        const profileData = response[0].profile;
+        profile.value = {
+            location: profileData.location ? profileData.location : "My location",
+            bio: profileData.bio ? profileData.bio : "My bio",
+            skillLevel: profileData.skillLevel ? profileData.skillLevel: "Beginner",
+            dateJoined: new Date(profileData.dateJoined),
+            userImg: profileData.userImg || "https://via.placeholder.com/120"
+        };
+    }
+    if (response == undefined) return;
+   
+
+    // fetch username if needed
+    if (!username.value) {
+      const userRes: GetUsernameResponse | { status: string, error: unknown} = await authStore._getUsername(
+        userId.value
+      );
+      if (Array.isArray(userRes) && userRes[0]?.username) {
+        username.value = userRes[0].username;
+      }
+    }
+   
+
+  } catch (err) {
+    console.error("Error loading profile:", err);
+  }
+};
+
+// -----------------------------
+// EDIT PROFILE
+// -----------------------------
+const startEditing = () => {
+    if (!userId.value) return;
+  editForm.value = {
+    location: profile.value.location,
+    bio: profile.value.bio,
+    skillLevel: profile.value.skillLevel,
+    userImg: profile.value.userImg
+  };
+  isEditing.value = true;
+};
+
+const cancelEditing = () => {
+  isEditing.value = false;
+};
+
+// Save edits
+const saveProfile = async () => {
+if (!userId.value || !session.value) return;
+  try {
+    const updatedProfile: UpdateProfileRequest = {
+      user: userId.value,
+      session: session.value ,
+      location: (editForm.value.location !== profile.value.location && editForm.value.location !== undefined) ? editForm.value.location : profile.value.location,
+      bio: (editForm.value.bio !== profile.value.bio && editForm.value.bio !== undefined) ? editForm.value.bio : profile.value.bio,
+      skillLevel: (editForm.value.skillLevel !== profile.value.skillLevel && editForm.value.skillLevel !== undefined) ? editForm.value.skillLevel : profile.value.skillLevel,
+      userImg: (editForm.value.userImg !== profile.value.userImg && editForm.value.userImg !== undefined) ? editForm.value.userImg : profile.value.userImg, 
+    };
+
+    console.log("Updating profile with:", updatedProfile);
+
+    await profileApi.updateProfile(updatedProfile);
+
+    // Update reactive profile
+    await loadProfile();
+
+    isEditing.value = false;
+  } catch (err) {
+    console.error("Failed to update profile:", err);
+  }
+};
+
+// Computed fields
+const profileDisplayName = computed(() => username.value || "Unknown");
+
+const dateJoinedFormatted = computed(() =>
+  profile.value.dateJoined.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  })
+);
+
+onMounted(async () => {
+  await loadProfile();
+});
+
+
 </script>
 
 
@@ -99,14 +243,43 @@ const dateJoinedFormatted = computed(() => {
   margin-bottom: 6px;
 }
 
-.edit-btn {
-  display: block;
-  margin: 0 auto;
+/* Editing inputs */
+.edit-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.edit-btn,
+.save-btn,
+.cancel-btn {
+  display: inline-block;
+  margin-top: 20px;
   padding: 10px 16px;
   border-radius: 6px;
-  background: #0078ff;
-  color: white;
-  cursor: pointer;
   border: none;
+  cursor: pointer;
+  color: white;
+  font-weight: 600;
+}
+
+.edit-btn {
+  background: #0078ff;
+}
+
+.save-btn {
+  background: #28a745;
+  margin-right: 10px;
+}
+
+.cancel-btn {
+  background: #dc3545;
+}
+
+.actions {
+  text-align: center;
 }
 </style>

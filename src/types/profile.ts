@@ -12,6 +12,7 @@ export interface ProfileResponse {
 
 export interface UpdateProfileRequest {
   user: string;
+  session: string;
   location?: string;
   bio?: string;
   skillLevel?: string;
