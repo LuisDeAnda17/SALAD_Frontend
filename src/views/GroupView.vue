@@ -8,7 +8,7 @@
     <div class="tabs">
       <button :class="{ active: currentTab === 'myGroups' }" @click="currentTab = 'myGroups'; fetchMyGroups();">My Groups</button>
       <button :class="{ active: currentTab === 'ledGroups' }" @click="currentTab = 'ledGroups'; fetchLedGroups();">Groups I Lead</button>
-      <button :class="{ active: currentTab === 'publicGroups' }" @click="currentTab = 'publicGroups'; fetchPublicGroups();">Public Groups</button>
+      <button :class="{ active: currentTab === 'publicGroups' }" @click="currentTab = 'publicGroups'; fetchPublicGroups();">Join Groups</button>
     </div>
 
     <div v-if="currentTab === 'myGroups'" class="my-groups-section">
@@ -111,7 +111,7 @@
     </div>
 
     <div v-if="currentTab === 'publicGroups'" class="public-groups-section">
-      <h2>Public Groups</h2>
+      <h2>Join Groups</h2>
 
       <input 
         v-model="searchQuery" 
@@ -121,7 +121,7 @@
       />
 
         <!-- 
-        If searchQuery is empty: show all public groups
+        If searchQuery is empty: show all joinable groups
         If searchQuery has text: show searchResults only
         -->
 
@@ -292,7 +292,7 @@ console.log('fetching groups', myGroups.value);
 
 const fetchPublicGroups = async (): Promise<void> => {
 if (!userId.value) return;
-  const res = (await groupApi.getPublicGroups()).data;
+  const res = allGroups.value;
   // FILTERING OUT GROUPS WE ARE ALREADY IN 
   const newGroups = res.filter((g: {group: string; name: string; leader: string}) => {
     return !myGroups.value.some((mg) => mg.group === g.group);
@@ -443,6 +443,7 @@ if (!session.value) return;
   // Refresh data
   await fetchMyGroups();
   await fetchLedGroups();
+  await fetchAllGroups();
 
   alert(`Group created with ID: ${data.group}`);
 };
@@ -455,6 +456,7 @@ const deleteGroup = async (group: GroupItem) => {
   await groupApi.deleteGroup(req);
   await fetchMyGroups();
   await fetchLedGroups();
+  await fetchAllGroups();
 };
 
 // ACCEPT REQUEST
@@ -482,169 +484,235 @@ onMounted(async () => {
   await fetchMyGroups();
   await fetchRequestedGroups();
   await fetchPublicGroups();
+  await fetchAllGroups();
 });
 
 </script>
 
 <style scoped>
+/* =============== PAGE LAYOUT =============== */
 .group-page {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 32px;
+  font-family: "Inter", sans-serif;
+  color: #e5e5e5;
 }
 
 .group-page h1 {
-  padding-bottom: 3px;
-  font-weight: 200;
+  font-size: 2.1rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
 }
 
 .group-page p {
-    margin: 0.35rem 0 0;
-    color: #4a5568;
-    margin-bottom: revert;
+  color: #b5b5b5;
+  margin-bottom: 1.6rem;
 }
 
+.group-page h2 {
+  font-size: 1.3rem;
+  margin: 1.4rem 0 0.6rem;
+  color: #ececec;
+}
+
+/* =============== TABS =============== */
 .tabs {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
-}
-
-button:not(.tabs button) {
-  margin-left: 10px;
+  margin-bottom: 22px;
 }
 
 .tabs button {
-  padding: 10px 15px;
-  border: none;
-  border-bottom: 2px solid transparent;
+  padding: 9px 16px;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #e5e5e5;
   cursor: pointer;
-  background-color: #f0f0f0;
+  transition: 0.15s ease;
+}
+
+.tabs button:hover {
+  background: #3a3a3a;
 }
 
 .tabs button.active {
-  border-bottom: 2px solid #007bff;
-  font-weight: bold;
+  background: #4b4b4b;
+  border-color: #5a5a5a;
+  color: white;
+  font-weight: 600;
 }
 
+/* =============== GENERAL LIST STYLE =============== */
 ul {
-  list-style-type: none;
-  padding-left: 0;
+  list-style: none;
+  padding: 0;
 }
 
 li {
-  margin-bottom: 10px;
+  background: #1c1c1c;
+  border: 1px solid #333;
+  padding: 18px;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-bottom: 14px;
+  color: #f0f0f0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
-.create-group-form {
-  margin-bottom: 20px;
+/* Nested lists */
+li ul li {
+  background: #262626;
+  border: 1px solid #3c3c3c;
   padding: 12px;
-  background: #fafafa;
+  margin-top: 6px;
   border-radius: 8px;
 }
 
+/* =============== INPUTS =============== */
 .input {
-  padding: 8px;
-  margin-right: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  color: #f0f0f0;
+  margin-bottom: 14px;
+}
+
+.input::placeholder {
+  color: #969696;
 }
 
 .checkbox {
-  margin-right: 10px;
-  color: black;
-}
-
-.create-group-form button {
-  padding: 6px 12px;
-}
-
-/* Fullscreen overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 2000;
+  gap: 6px;
+  margin: 10px 0 16px;
 }
 
-/* Modal card */
-.modal-content {
-  background: white;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  padding: 20px;
-  border-radius: 10px;
-  overflow-y: auto; /* enables scrolling */
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-}
-
-/* Section toggle buttons */
-.section-toggle {
-  margin: 10px 0;
-  padding: 6px 10px;
-  width: 100%;
-  text-align: left;
-  background: #eee;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* Scrollable section */
-.modal-section {
-  margin: 10px 0;
-  padding: 10px;
-  background: #b2b1b16f;
+/* =============== BUTTONS =============== */
+button {
+  padding: 10px 18px;
   border-radius: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  color: black;
+  background: #4a4a4a;
+  color: #f2f2f2;
+  border: 1px solid #5a5a5a;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: 0.15s ease;
+
+  margin-left: 10px;
+  margin-top: 6px; /* FIX: spacing between buttons */
 }
 
-/* Close button */
+button:hover {
+  background: #5a5a5a;
+}
+
+button:disabled {
+  background: #6a6a6a;
+  color: #b5b5b5;
+}
+
+/* Secondary section toggle buttons */
+.section-toggle {
+  background: #3a3a3a !important;
+}
+
+.section-toggle:hover {
+  background: #2f2f2f !important;
+}
+
+/* Close button (modal) */
 .close-btn {
-  margin-top: 20px;
-  background: #d33;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
+  background: #5a3c3c !important;
+  border-color: #704848;
+  margin-top: 12px;
+}
+
+.close-btn:hover {
+  background: #7a4c4c !important;
+}
+
+/* =============== MODAL =============== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+}
+
+.modal-content {
+  background: #1c1c1c;
+  padding: 26px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 480px;
+  border: 1px solid #3a3a3a;
+  box-shadow: 0 0 16px rgba(0,0,0,0.4);
+}
+
+/* Restore original block layout for CREATE GROUP */
+.modal-section {
+  background: #232323;
+  border: 1px solid #3c3c3c;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+/* Inputs restored to original layout look */
+.input {
   width: 100%;
-  text-align: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  color: #f0f0f0;
+  margin-bottom: 12px;   /* tighter spacing */
 }
 
-/* My Groups Page */
-.my-groups-section li {
-  margin: 10px;
-  margin-left: 0;
-	background-color: rgb(182, 191, 228, 0.3);
-	border-radius: 4px;
-	padding: 3px
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 16px;    /* clean spacing */
 }
 
-.my-groups-section li ul li {
-  padding: 7px;
+/* Buttons under the form (same alignment as original UI) */
+button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: #4a4a4a;
+  color: #f2f2f2;
+  border: 1px solid #5a5a5a;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: 0.15s ease;
+  margin-top: 6px;
 }
 
-/* Led Groups Page */
-.led-groups-section li {
-  margin: 10px;
-  margin-left: 0px;
-  background-color: rgb(182, 191, 228, 0.3);
-  border-radius: 4px;
-  padding: 3px
+button.create-btn {
+  width: 100%;         /* full width like original */
+  margin-top: 10px;
 }
 
-/* Public Groups Page */
-.public-groups-section li {
-  margin: 10px;
-  margin-left: 0px;
-  background-color: rgb(182, 191, 228, 0.3);
-  border-radius: 4px;
-  padding: 3px
+/* Red close button */
+.close-btn {
+  background: #5a3c3c !important;
+  border-color: #704848;
+  margin-top: 14px;
 }
+
+.close-btn:hover {
+  background: #7a4c4c !important;
+}
+
 
 </style>
