@@ -15,7 +15,7 @@ import type { AxiosResponse } from 'axios'
 import { http } from './http'
 
 export class AuthApi {
-  async login(request: LoginRequest): Promise<AxiosResponse<LoginResponse>> {
+  async login(request: LoginRequest): Promise<AxiosResponse<LoginResponse | ErrorResponse>> {
     return http.post('/login', request)
   }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import type { ExerciseInfo } from '@/types/challengeDefinition'
+import type { ExerciseInfo, Level } from '@/types/challengeDefinition'
 import { useAuthStore } from '@/stores/auth'
 import { useChallengeDefinitionStore } from '@/stores/challengeDefinition'
 import { useChallengeVerificationStore } from '@/stores/challengeVerification'
@@ -19,7 +19,7 @@ const { _getPartDayWeek } = challengeProgressStore
 
 const challenge = ref<string>('')
 const exercise = ref<string>('')
-const level = ref<number>(1)
+const level = ref<Level>('Easy')
 const day = ref<number>(1)
 const week = ref<number>(1)
 const part = ref<string>('')

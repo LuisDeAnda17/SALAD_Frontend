@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, reactive } from "vue";
+import { onMounted, onUnmounted, ref, computed, reactive } from "vue";
 import ProfilePage from "@/components/Profile-Page.vue";
 import ChatPopup from "@/components/ChatPopup.vue";
 import type { User } from "@/types/api";
@@ -265,9 +265,20 @@ const startChat = async (userId: string) => {
       username: userProfile.username,
     };
     chatId.value = chatIdValue;
-    // Remember this chat for future \"Open Chat\" actions
+    // Remember this chat for future "Open Chat" actions
     if (chatIdValue) {
       existingChatIds[userId] = chatIdValue;
+      // Notify other components (including other users' views) that a chat was created
+      // This allows user 2's view to update when user 1 starts a chat with them
+      window.dispatchEvent(
+        new CustomEvent("chat-created", {
+          detail: {
+            chatId: chatIdValue,
+            requester: authStore.userId,
+            receiver: userId,
+          },
+        })
+      );
     }
     chatPopupOpen.value = true;
     fetchError.value = null;
@@ -283,7 +294,31 @@ const closeChatPopup = () => {
   chatId.value = null;
 };
 
-onMounted(fetchProfiles);
+// Handle chat creation events to update cache when another user starts a chat with current user
+const handleChatCreated = (event: CustomEvent<{ chatId: string; requester: string; receiver: string }>) => {
+  const { chatId, requester, receiver } = event.detail;
+  const currentUserId = authStore.userId;
+  
+  // If this chat was created with the current user (they are the receiver), update the cache
+  if (currentUserId && receiver === currentUserId && requester) {
+    existingChatIds[requester] = chatId;
+  }
+  // If the current user created this chat (they are the requester), update the cache
+  else if (currentUserId && requester === currentUserId && receiver) {
+    existingChatIds[receiver] = chatId;
+  }
+};
+
+onMounted(() => {
+  fetchProfiles();
+  // Listen for chat creation events
+  window.addEventListener("chat-created", handleChatCreated as EventListener);
+});
+
+onUnmounted(() => {
+  // Clean up event listener
+  window.removeEventListener("chat-created", handleChatCreated as EventListener);
+});
 </script>
 
 <template>
@@ -345,9 +380,9 @@ onMounted(fetchProfiles);
 
 <style scoped>
 .friending {
-  max-width: 960px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem 1rem 3rem;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -370,15 +405,25 @@ onMounted(fetchProfiles);
 
 .friending__subtitle {
   margin: 0.35rem 0 0;
-  color: #4a5568;
+  color: #eee;
+}
+
+h1 {
+  color: #eee;
+  margin: 0.5rem 0;
 }
 
 .friending__search input {
   min-width: 240px;
   padding: 0.65rem 1rem;
-  border-radius: 999px;
-  border: 1px solid #cbd5f5;
-  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #eee;
+}
+
+.friending__search input::placeholder {
+  color: #888;
 }
 
 .friending__list {
@@ -390,16 +435,18 @@ onMounted(fetchProfiles);
 .friending__error {
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
 .friending__loading,
 .friending__empty {
   text-align: center;
-  color: #4a5568;
+  color: #aaa;
   padding: 2rem;
-  border: 1px dashed #d6d8e7;
-  border-radius: 16px;
+  border: 1px dashed #444;
+  border-radius: 12px;
+  background: #2a2a2a;
 }
 </style>

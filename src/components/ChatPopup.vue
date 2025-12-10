@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { chatApi } from "@/services/api/chatApi";
 import { authApi } from "@/services/api/authApi";
 import type { GetDMsResponse } from "@/types/chat";
@@ -28,6 +28,8 @@ const loading = ref(false);
 const sending = ref(false);
 const error = ref<string | null>(null);
 const messagesContainer = ref<HTMLElement | null>(null);
+const pollingInterval = ref<number | null>(null);
+const lastMessageId = ref<string | null>(null);
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -37,10 +39,13 @@ const scrollToBottom = () => {
   });
 };
 
-const fetchMessages = async () => {
+const fetchMessages = async (isPolling = false) => {
   if (!props.chatId) return;
   
-  loading.value = true;
+  // Only show loading indicator on initial load, not during polling
+  if (!isPolling) {
+    loading.value = true;
+  }
   error.value = null;
   try {
     const response = await chatApi.getDMs({ chat: props.chatId });
@@ -75,31 +80,61 @@ const fetchMessages = async () => {
       );
       
       // Sort by time
-      messages.value = messagesWithUsernames.sort(
+      const sortedMessages = messagesWithUsernames.sort(
         (a, b) => a.time.getTime() - b.time.getTime()
       );
       
-      scrollToBottom();
+      // If polling, only update if there are new messages
+      if (isPolling && lastMessageId.value) {
+        const newMessages = sortedMessages.filter(
+          msg => !messages.value.some(existing => existing.id === msg.id)
+        );
+        
+        if (newMessages.length > 0) {
+          // Append new messages
+          messages.value = [...messages.value, ...newMessages].sort(
+            (a, b) => a.time.getTime() - b.time.getTime()
+          );
+          scrollToBottom();
+        }
+      } else {
+        // Initial load or no previous messages - replace all
+        messages.value = sortedMessages;
+        scrollToBottom();
+      }
+      
+      // Update last message ID for polling comparison
+      if (sortedMessages.length > 0) {
+        const lastMsg = sortedMessages[sortedMessages.length - 1];
+        if (lastMsg) {
+          lastMessageId.value = lastMsg.id;
+        }
+      }
     } else if (response.data && typeof response.data === 'object' && 'error' in response.data) {
       error.value = (response.data as { error: string }).error;
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "Failed to load messages";
+    if (!isPolling) {
+      error.value = err instanceof Error ? err.message : "Failed to load messages";
+    }
   } finally {
-    loading.value = false;
+    if (!isPolling) {
+      loading.value = false;
+    }
   }
 };
 
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !props.chatId || sending.value) return;
   
+  const messageText = newMessage.value.trim();
   sending.value = true;
   error.value = null;
   try {
     const response = await chatApi.sendChat({
       sender: props.currentUserId,
       receiver: props.otherUserId,
-      message: newMessage.value.trim(),
+      message: messageText,
     });
     
     if (response.data && "error" in response.data) {
@@ -108,6 +143,18 @@ const sendMessage = async () => {
       newMessage.value = "";
       // Refresh messages to show the new one
       await fetchMessages();
+      
+      // Notify other components (including other users' views) that a message was sent
+      // This allows real-time updates across tabs/devices
+      window.dispatchEvent(
+        new CustomEvent("message-sent", {
+          detail: {
+            chatId: props.chatId,
+            sender: props.currentUserId,
+            receiver: props.otherUserId,
+          },
+        })
+      );
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to send message";
@@ -124,20 +171,70 @@ const handleKeyPress = (e: KeyboardEvent) => {
 };
 
 const closePopup = () => {
+  stopPolling();
   emit("close");
+};
+
+const startPolling = () => {
+  // Clear any existing interval
+  stopPolling();
+  
+  // Poll for new messages every 2 seconds
+  pollingInterval.value = window.setInterval(() => {
+    if (props.chatId) {
+      fetchMessages(true); // true indicates this is a polling request
+    }
+  }, 2000);
+};
+
+const stopPolling = () => {
+  if (pollingInterval.value !== null) {
+    clearInterval(pollingInterval.value);
+    pollingInterval.value = null;
+  }
+};
+
+// Handle message-sent events to refresh immediately when a message is sent
+const handleMessageSent = (event: CustomEvent<{ chatId: string; sender: string; receiver: string }>) => {
+  const { chatId, sender, receiver } = event.detail;
+  
+  // Refresh if this message is for the current chat
+  // Check if current user is either sender or receiver
+  if (
+    props.chatId === chatId &&
+    (sender === props.currentUserId || receiver === props.currentUserId)
+  ) {
+    // Small delay to ensure backend has processed the message
+    setTimeout(() => {
+      fetchMessages(true);
+    }, 500);
+  }
 };
 
 onMounted(() => {
   if (props.chatId) {
     fetchMessages();
+    startPolling();
   }
+  
+  // Listen for message-sent events
+  window.addEventListener("message-sent", handleMessageSent as EventListener);
 });
 
-watch(() => props.chatId, (newChatId) => {
+onUnmounted(() => {
+  stopPolling();
+  window.removeEventListener("message-sent", handleMessageSent as EventListener);
+});
+
+watch(() => props.chatId, (newChatId, oldChatId) => {
   if (newChatId) {
+    lastMessageId.value = null; // Reset last message ID
     fetchMessages();
+    startPolling();
   } else {
+    stopPolling();
     messages.value = [];
+    lastMessageId.value = null;
   }
 });
 </script>
@@ -220,14 +317,15 @@ watch(() => props.chatId, (newChatId) => {
 }
 
 .chat-popup {
-  background: white;
-  border-radius: 16px;
+  background: #1c1c1c;
+  border-radius: 12px;
   width: 100%;
   max-width: 500px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  border: 1px solid #333;
 }
 
 .chat-popup__header {
@@ -235,14 +333,14 @@ watch(() => props.chatId, (newChatId) => {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #333;
 }
 
 .chat-popup__header h3 {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: #eee;
 }
 
 .chat-popup__close {
@@ -250,7 +348,7 @@ watch(() => props.chatId, (newChatId) => {
   border: none;
   font-size: 2rem;
   line-height: 1;
-  color: #6b7280;
+  color: #aaa;
   cursor: pointer;
   padding: 0;
   width: 2rem;
@@ -263,15 +361,16 @@ watch(() => props.chatId, (newChatId) => {
 }
 
 .chat-popup__close:hover {
-  background-color: #f3f4f6;
-  color: #111827;
+  background-color: #2a2a2a;
+  color: #eee;
 }
 
 .chat-popup__error {
   padding: 0.75rem 1.5rem;
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.2);
+  color: #ff6b6b;
   font-size: 0.875rem;
+  border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
 .chat-popup__messages {
@@ -283,12 +382,13 @@ watch(() => props.chatId, (newChatId) => {
   gap: 1rem;
   min-height: 200px;
   max-height: 400px;
+  background: #1c1c1c;
 }
 
 .chat-popup__loading,
 .chat-popup__empty {
   text-align: center;
-  color: #6b7280;
+  color: #aaa;
   padding: 2rem;
   font-size: 0.875rem;
 }
@@ -325,14 +425,15 @@ watch(() => props.chatId, (newChatId) => {
 }
 
 .chat-popup__message--received .chat-popup__message-content {
-  background: #f3f4f6;
-  color: #111827;
+  background: #2a2a2a;
+  color: #eee;
   border-bottom-left-radius: 4px;
+  border: 1px solid #333;
 }
 
 .chat-popup__message-time {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #888;
   padding: 0 0.5rem;
 }
 
@@ -340,36 +441,43 @@ watch(() => props.chatId, (newChatId) => {
   display: flex;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid #333;
+  background: #1c1c1c;
 }
 
 .chat-popup__input input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid #444;
+  border-radius: 6px;
   font-size: 0.9375rem;
   outline: none;
   transition: border-color 0.2s;
+  background: #2a2a2a;
+  color: #eee;
+}
+
+.chat-popup__input input::placeholder {
+  color: #888;
 }
 
 .chat-popup__input input:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .chat-popup__input input:disabled {
-  background: #f3f4f6;
+  background: #1c1c1c;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .chat-popup__send {
   padding: 0.75rem 1.5rem;
-  background: #2563eb;
+  background: rgba(37, 99, 235, 0.75);
   color: white;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.9);
+  border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -377,12 +485,14 @@ watch(() => props.chatId, (newChatId) => {
 }
 
 .chat-popup__send:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: rgba(37, 99, 235, 0.85);
 }
 
 .chat-popup__send:disabled {
-  background: #9ca3af;
+  background: rgba(156, 163, 175, 0.5);
+  border-color: rgba(156, 163, 175, 0.7);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 </style>
 
