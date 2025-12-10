@@ -3,7 +3,12 @@
 
     <!-- Header -->
     <div class="profile-header">
-      <img :src="profile.userImg" class="profile-image" alt="Profile Image" />
+      <div v-if="profile.userImg" class="profile-image-container">
+        <img :src="profile.userImg" class="profile-image" alt="Profile Image" />
+      </div>
+      <div v-else class="profile-image-placeholder">
+        <span>{{ profileDisplayName.charAt(0).toUpperCase() }}</span>
+      </div>
       <h1>{{ profileDisplayName }}</h1>
       <p class="skill">{{ profile.skillLevel || 'No skill level set' }}</p>
     </div>
@@ -37,8 +42,8 @@
         </select>
       </div>
 
-      <!-- Image -->
-      <div class="profile-section">
+      <!-- Image (only show when editing own profile) -->
+      <div v-if="isOwnProfile" class="profile-section">
         <h2>Profile Image URL</h2>
         <img v-if="!isEditing" :src="profile.userImg" class="profile-image" />
         <input v-else v-model="editForm.userImg" class="edit-input" />
@@ -53,7 +58,7 @@
     </div>
 
     <!-- Buttons -->
-    <div class="actions">
+    <div class="actions" v-if="isOwnProfile">
       <button v-if="!isEditing" class="edit-btn" @click="startEditing">
         Edit Profile
       </button>
@@ -69,16 +74,26 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { profileApi } from "@/services/api/profileApi";
 
 import type { ProfileResponse, UpdateProfileRequest } from "@/types/profile";
 import type { GetUsernameResponse } from "@/types/api";
 
+const route = useRoute();
 const authStore = useAuthStore();
-const userId = computed(() => authStore.user?._id);
+const currentUserId = computed(() => authStore.user?._id);
 const session = computed(() => authStore.sessionId);
+
+// Get userId from route params or use current user
+const profileUserId = computed(() => {
+  const paramUserId = route.params.userId as string | undefined;
+  return paramUserId || currentUserId.value || "";
+});
+
+const isOwnProfile = computed(() => profileUserId.value === currentUserId.value);
 const username = ref("");
 
 type Profile = {
@@ -111,33 +126,31 @@ const editForm = ref<Profile>({
 // LOAD PROFILE
 // -----------------------------
 const loadProfile = async () => {
-  if (!userId.value || !session.value) return;
+  if (!profileUserId.value) return;
 
   try {
     const response: ProfileResponse = (await profileApi.getProfile(
-      {user: userId.value},
+      {user: profileUserId.value},
     )).data;
     if (Array.isArray(response) && response[0] && response[0].profile) {
         const profileData = response[0].profile;
         profile.value = {
-            location: profileData.location ? profileData.location : "My location",
-            bio: profileData.bio ? profileData.bio : "My bio",
-            skillLevel: profileData.skillLevel ? profileData.skillLevel: "Beginner",
+            location: profileData.location ? profileData.location : "Not set",
+            bio: profileData.bio ? profileData.bio : "No bio provided yet.",
+            skillLevel: profileData.skillLevel ? profileData.skillLevel: "Not set",
             dateJoined: new Date(profileData.dateJoined),
-            userImg: profileData.userImg || "https://via.placeholder.com/120"
+            userImg: profileData.userImg || ""
         };
     }
     if (response == undefined) return;
    
 
-    // fetch username if needed
-    if (!username.value) {
-      const userRes: GetUsernameResponse | { status: string, error: unknown} = await authStore._getUsername(
-        userId.value
-      );
-      if (Array.isArray(userRes) && userRes[0]?.username) {
-        username.value = userRes[0].username;
-      }
+    // fetch username
+    const userRes: GetUsernameResponse | { status: string, error: unknown} = await authStore._getUsername(
+      profileUserId.value
+    );
+    if (Array.isArray(userRes) && userRes[0]?.username) {
+      username.value = userRes[0].username;
     }
    
 
@@ -150,7 +163,7 @@ const loadProfile = async () => {
 // EDIT PROFILE
 // -----------------------------
 const startEditing = () => {
-    if (!userId.value) return;
+    if (!currentUserId.value || !isOwnProfile.value) return;
   editForm.value = {
     location: profile.value.location,
     bio: profile.value.bio,
@@ -166,10 +179,10 @@ const cancelEditing = () => {
 
 // Save edits
 const saveProfile = async () => {
-if (!userId.value || !session.value) return;
+if (!currentUserId.value || !session.value || !isOwnProfile.value) return;
   try {
     const updatedProfile: UpdateProfileRequest = {
-      user: userId.value,
+      user: currentUserId.value,
       session: session.value ,
       location: (editForm.value.location !== profile.value.location && editForm.value.location !== undefined) ? editForm.value.location : profile.value.location,
       bio: (editForm.value.bio !== profile.value.bio && editForm.value.bio !== undefined) ? editForm.value.bio : profile.value.bio,
@@ -205,52 +218,118 @@ onMounted(async () => {
   await loadProfile();
 });
 
+// Reload profile when route changes
+watch(() => route.params.userId, async () => {
+  username.value = ""; // Reset username
+  await loadProfile();
+});
+
 
 </script>
 
 
 <style scoped>
 .profile-page {
-  max-width: 700px;
-  margin: 40px auto;
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px;
-  font-family: system-ui, sans-serif;
 }
 
 .profile-header {
   text-align: center;
   margin-bottom: 32px;
+  padding: 2rem;
+  background: #1c1c1c;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.profile-image-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 
 .profile-image {
   width: 120px;
   height: 120px;
-  border-radius: 9999px;
+  border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #444;
+  background: #2a2a2a;
+}
+
+.profile-image-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #1c1c1c;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #eee;
+}
+
+h1 {
+  color: #eee;
+  margin: 1rem 0 0.5rem;
 }
 
 .skill {
-  color: #666;
+  color: #aaa;
   margin-top: 4px;
+  font-size: 1rem;
+}
+
+.profile-body {
+  background: #1c1c1c;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #333;
 }
 
 .profile-section {
   margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #333;
+}
+
+.profile-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .profile-section h2 {
   font-size: 1.2rem;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  color: #eee;
+}
+
+.profile-section p {
+  color: #ccc;
+  margin: 0;
+  line-height: 1.6;
 }
 
 /* Editing inputs */
 .edit-input {
   width: 100%;
-  padding: 8px;
+  padding: 0.75rem;
   margin-top: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #444;
   border-radius: 6px;
   font-size: 1rem;
+  background: #2a2a2a;
+  color: #eee;
+}
+
+.edit-input::placeholder {
+  color: #888;
 }
 
 .edit-btn,
@@ -258,28 +337,46 @@ onMounted(async () => {
 .cancel-btn {
   display: inline-block;
   margin-top: 20px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid;
   cursor: pointer;
   color: white;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
 }
 
 .edit-btn {
-  background: #0078ff;
+  background: rgba(37, 99, 235, 0.75);
+  border-color: rgba(37, 99, 235, 0.9);
+}
+
+.edit-btn:hover {
+  background: rgba(37, 99, 235, 0.85);
 }
 
 .save-btn {
-  background: #28a745;
+  background: rgba(16, 185, 129, 0.75);
+  border-color: rgba(16, 185, 129, 0.9);
   margin-right: 10px;
 }
 
+.save-btn:hover {
+  background: rgba(16, 185, 129, 0.85);
+}
+
 .cancel-btn {
-  background: #dc3545;
+  background: rgba(239, 68, 68, 0.75);
+  border-color: rgba(239, 68, 68, 0.9);
+}
+
+.cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.85);
 }
 
 .actions {
   text-align: center;
+  margin-top: 2rem;
 }
 </style>

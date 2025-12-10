@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import type { User } from "@/types/api";
 
 type ProfileUser = User & {
@@ -59,11 +60,18 @@ const handleRemoveFriend = () => {
   if (!props.user || isSelf.value) return;
   emit("remove-friend", props.user._id);
 };
+
+const router = useRouter();
+const goToProfile = () => {
+  if (props.user?._id) {
+    router.push(`/profile/${props.user._id}`);
+  }
+};
 </script>
 
 <template>
   <article class="profile-card">
-    <div class="profile-card__avatar-section">
+    <div class="profile-card__avatar-section" @click="goToProfile" style="cursor: pointer;">
       <div class="profile-card__avatar">
         <span>{{ props.user?.username?.charAt(0)?.toUpperCase() }}</span>
       </div>
@@ -130,6 +138,11 @@ const handleRemoveFriend = () => {
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
+  transition: opacity 0.2s ease;
+}
+
+.profile-card__avatar-section:hover {
+  opacity: 0.8;
 }
 
 .profile-card__avatar {
