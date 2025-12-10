@@ -19,7 +19,7 @@ const challenge = route.params.challenge as string // the UUID
 
 const authStore = useAuthStore()
 const challengeDefinitionStore = useChallengeDefinitionStore()
-const { _getChallengeDetails, _getCreator, _getChallengeName, _getDateCreated } =
+const { _getChallengeDetails, _getCreator, _getChallengeName, _getDateCreated, _isOpen } =
   challengeDefinitionStore
 const { _getUsername } = authStore
 const { user } = storeToRefs(authStore)
@@ -34,6 +34,7 @@ const creatorUsername = ref<string>('')
 const name = ref<string>('')
 const dateCreated = ref<Date>()
 const dateCreatedString = ref<string>()
+const open = ref<boolean>(false)
 
 const category = computed(() => {
   if (info.value) {
@@ -131,6 +132,11 @@ async function fetchChallengeData() {
     }
   }
 
+  const challengeOpenResult = await _isOpen(challenge)
+  if (Array.isArray(challengeOpenResult) && challengeOpenResult[0]) {
+    open.value = challengeOpenResult[0].isOpen
+  }
+
   const challengeNameResult = await _getChallengeName(challenge)
   if (Array.isArray(challengeNameResult) && challengeNameResult[0]) {
     name.value = challengeNameResult[0].name
@@ -151,8 +157,10 @@ onMounted(fetchChallengeData)
   <div class="challenge-wrapper">
     <div class="challenge-info">
       <h2 class="challenge-title">{{ name }}</h2>
-      <p class="exercise-name">{{ exercise }} ⋅ Level {{ level }}</p>
+      <p class="exercise-name">{{ exercise }} ⋅ {{ level }}</p>
       <p class="creator">Created by {{ creatorUsername }} on {{ dateCreatedString }}</p>
+      <p v-if="open" class="open-status">Open</p>
+      <p v-else class="open-status">Closed</p>
       <div class="challenge-card">
         <div class="challenge-detail">
           <p>Frequency: {{ daysPerWeek }} days per week for {{ weeks }} weeks</p>
@@ -216,7 +224,8 @@ onMounted(fetchChallengeData)
   text-align: center;
 }
 
-.creator {
+.creator,
+.open-status {
   font-size: 1rem;
   color: #ccc;
   text-align: center;
